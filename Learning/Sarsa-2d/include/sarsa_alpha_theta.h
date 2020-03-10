@@ -13,15 +13,39 @@
 #define n_theta 14
 
 //#define DEBUGSARSA
-//provare a variare alpha ed epsilon con matrice piccola per velocizzare il learning e poi trovare una
-//discretizzazione ideale degli angoli theta
 
 double Alpha = 0.1; // 0.01, 10e-5 come punto di partenza
 double epsilon = 0.8;
 
 double thetas[n_theta] = {0., PI/24., PI*2./24., PI*3/24., PI*4./24., PI*5./24., PI*6/24, PI*7/24, \
 PI*8/24, PI*9/24, PI*10/24, PI*11/24, PI*12/24., PI};
-//double thetas[n_theta] = {0., PI/12., PI*2./12., PI/4., PI*4./12., PI*5./12.,  PI/2., PI};
+
+void fill_Q_mat(FILE *Q_mat_file, double *Q){
+
+  for (int i=0; i<n_alphas; i++){
+    for (int j=0; j<n_actions; j++){
+        for (int kk=0; kk<n_theta; kk++){
+            fprintf(Q_mat_file,"%f ", Q[i*n_actions*n_theta + j*n_theta + kk]);
+        }
+      }
+    }
+  fprintf(Q_mat_file,"\n");
+  
+}
+
+void fill_Q_counter(FILE * Q_mat_counter, int* Q_counter, int episode){
+
+  fprintf(Q_mat_counter,"%d ", episode);
+  for (int i=0; i<n_alphas; i++){
+    for (int j=0; j<n_actions; j++){
+        for (int kk=0; kk<n_theta; kk++){
+            fprintf(Q_mat_counter,"%d ", Q_counter[i*n_actions*n_theta + j*n_theta + kk]);
+        }
+    }
+  }
+  fprintf(Q_mat_counter,"\n");
+
+}
 
 void print_mat(double *Q){
 

@@ -15,22 +15,19 @@
 #define coeff_friction 0.4      // Block friction coefficient
 #define m_blocco 100.0          // Block mass
 
-double W;
-double Vw[2], Va_mod;
+double Va_mod;
 double Va[2];
-double L[2], Lc;
-double D[2], Dc;
-double Fg[2];
-//double gamma_;                // gliding angle
+double L[2];
+double D[2];
+double Fg[2] = {0, -m*g};
 double F_perpendic;
 double theta_star;
 double beta;
-double T_orizz;
 double Tension[2];
 double Ftot[2]; 
 
 void variables_initialization(double * x_blocco, double * v_blocco, double * a_blocco,
-                              double * theta,              // Angle, velocity and acceleration values
+                              double * theta,  // Angle, velocity and acceleration values
                               double * rk, double * vk, double * ak, 
                               double theta0, double vtheta0){
     x_blocco[0] = 0;
@@ -42,8 +39,6 @@ void variables_initialization(double * x_blocco, double * v_blocco, double * a_b
 
     theta[0] = theta0;
     theta[1] = vtheta0;
-    //theta[0] = ((float)rand()/(float)(RAND_MAX)) * 3.14;    // Random num between 0 and 3.14
-    //theta[1] = ((float)rand()/(float)(RAND_MAX)) - 0.5;     // Random num between -0.5 and 0.5
     theta[2] = 0.;
 
     rk[0] = R*cos(theta[0]) + x_blocco[0];
@@ -57,48 +52,36 @@ void variables_initialization(double * x_blocco, double * v_blocco, double * a_b
 void integration_trajectory(double * rk, double * vk, double * ak, // Kite variables
                             double * x_blocco, double * v_blocco, double * a_blocco, // Block variables
                             double * theta, // Angle, velocity and acceleration values
-                            double * T, double * power, double Cl, double Cd,
-                            double Wx, double Wy, double * lift, double * drag){
+                            double * T, int alpha,
+                            double * W, double * lc, double * dc){
 
-Vw[0] = Wx;                          // Wind velocity on x
-Vw[1] = Wy;                          // Wind velocity on z
-
-Va[0] = vk[0] - Vw[0];              // Apparent velocity on x
-Va[1] = vk[1] - Vw[1];              // Apparent velocity on z
+Va[0] = vk[0] - W[0];              // Apparent velocity on x
+Va[1] = vk[1] - W[1];              // Apparent velocity on z
 
 Va_mod = sqrt(Va[0]*Va[0] + Va[1]*Va[1]);
 
-//gamma_ = atan(Va[1]/Va[0]);
-
 beta = atan2(Va[1], Va[0]);
 
-Lc = 0.5*rho*Cl*A*Va_mod*Va_mod;
-*lift = Lc;
+*lc = 0.5*rho*CL_alpha[alpha]*A*Va_mod*Va_mod;
 
-Dc = 0.5*rho*Cd*A*Va_mod*Va_mod;
-*drag = Dc;
+*dc = 0.5*rho*CD_alpha[alpha]*A*Va_mod*Va_mod;
 
 // Lift (x, z)
 
 if (beta > - PI/2. && beta < PI/2.){
-    L[0] = Lc*cos(beta + PI/2.);
-    L[1] = Lc*sin(beta + PI/2.);
+    L[0] = *lc*cos(beta + PI/2.);
+    L[1] = *lc*sin(beta + PI/2.);
 } else {
-    L[0] = Lc*cos(beta - PI/2.);
-    L[1] = Lc*sin(beta - PI/2.);
+    L[0] = *lc*cos(beta - PI/2.);
+    L[1] = *lc*sin(beta - PI/2.);
 }
 
 // Drag (x, z)
 
-D[0] = Dc*cos(beta + PI);
-D[1] = Dc*sin(beta + PI);
+D[0] = *dc*cos(beta + PI);
+D[1] = *dc*sin(beta + PI);
 
-theta_star = atan((Lc - m*g)/Dc);
-
-// Gravitional force Kite (x, z)
-
-Fg[0] = 0;                      
-Fg[1] = -m*g;                   
+theta_star = atan((*lc - m*g)/(*dc));                 
 
 // Theta acceleration
 
@@ -132,44 +115,6 @@ else if ( v_blocco[0] < 0 ){
 
 v_blocco[0] = v_blocco[0] + h*a_blocco[0];
 
-// Case 1: First quadrant, 0 < theta < PI/2
-
-/*if (cos(theta[0]) > 0){
-
-    if (*T*cos(theta[0]) > F_perpendic ){
-        a_blocco[0] = (*T*cos(theta[0]) - F_perpendic )/m_blocco; // deve essere positiva
-        v_blocco[0] = v_blocco[0] + h*a_blocco[0];
-    }
-    else if (*T*cos(theta[0]) < F_perpendic && v_blocco[0] > 0.){
-        a_blocco[0] = (*T*cos(theta[0]) - F_perpendic )/m_blocco; // deve essere negativa
-        v_blocco[0] = v_blocco[0] + h*a_blocco[0];
-    }
-    else if ( *T*cos(theta[0]) <= F_perpendic && v_blocco[0] <= 0.){ //se blocco fermo e tensione piu debole della f attrito
-        a_blocco[0] = 0;
-        v_blocco[0] = 0.;
-    }
-
-} 
-
-// Case 2: Second quadrant, PI/2 < theta < PI
-
-else if (cos(theta[0]) < 0){
-
-    if (-*T*cos(theta[0]) > F_perpendic ){
-        a_blocco[0] = (*T*cos(theta[0]) + F_perpendic )/m_blocco; // deve essere negativa
-        v_blocco[0] = v_blocco[0] + h*a_blocco[0];
-    }
-    else if (-*T*cos(theta[0]) < F_perpendic && v_blocco[0] < 0.){
-        a_blocco[0] = (*T*cos(theta[0]) + F_perpendic )/m_blocco; // deve essere positiva
-        v_blocco[0] = v_blocco[0] + h*a_blocco[0];
-    }
-    else if ( -*T*cos(theta[0]) <= F_perpendic && v_blocco[0] >= 0.){ //se blocco fermo e tensione piu debole della f attrito
-        a_blocco[0] = 0;
-        v_blocco[0] = 0.;
-    }
-
-}*/
-
 x_blocco[0] = x_blocco[0] + h*v_blocco[0]; 
 
 theta[1] = theta[1] + h*theta[2];
@@ -202,15 +147,14 @@ Ftot[1] = L[1] + D[1] + Fg[1] + Tension[1];
 
 // Power
 
-//*power = *T*dpos[0]*sin(pos[1]); // ?
+//*power = *T*dpos[0]*sin(pos[1]);
 
 #ifdef DEBUG
     printf("thetastar = %f\n", theta_star);
     printf("beta=%f\n", beta);
-    printf("Vw[0]= %f, Vw[1]=%f\n", Vw[0], Vw[1]);
+    printf("W[0]= %f, W[1]=%f\n", W[0], W[1]);
     printf("Vkx=%f, Vkz=%f\n", vk[0], vk[1]); 
     printf("Va_mod=%f, Va[0]=%f, Va[1]=%f\n", Va_mod, Va[0], Va[1]); 
-    //printf("gamma_=%f\n", gamma_);
     printf("L[0]=%f\n", L[0]); 
     printf("L[1]=%f\n", L[1]); 
     printf("D[0]=%f\n", D[0]); 
@@ -228,7 +172,6 @@ Ftot[1] = L[1] + D[1] + Fg[1] + Tension[1];
     printf("ak[0]= %f, ak[1]=%f\n", ak[0], ak[1]);
     printf("forze totali x:%f\n", Ftot[0]);
     printf("forze totali x:%f\n", Ftot[1]);
-    //printf("power %f\n", *power);
     printf("\n");
 #endif    
 

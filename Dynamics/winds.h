@@ -1,5 +1,4 @@
 #include <math.h>
-#include "dynamics_kite_with_block.h"
 
 #ifndef WIND
 #define WIND

@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
     }
 
     FILE *trajectory, *wind;
-    trajectory = fopen("out", "w+"); // fopen(filename_trajectory, "w+");
+    trajectory = fopen("out.txt", "w+"); // fopen(filename_trajectory, "w+");
 
     fprintf(trajectory, "t       x_kite       y_kite      x_block      y_block      theta      r_diff\n");
 

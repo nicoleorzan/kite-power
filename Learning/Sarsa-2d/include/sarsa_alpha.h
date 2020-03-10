@@ -14,6 +14,17 @@
 
 //#define DEBUGSARSA
 
+void fill_Q_mat(FILE *Q_mat_file, double *Q){
+
+  for (int i=0; i<n_alphas; i++){
+    for (int j=0; j<n_actions; j++){
+          fprintf(Q_mat_file,"%f ", Q[i*n_actions + j]);
+        }
+      }
+  fprintf(Q_mat_file,"\n");
+  
+}
+
 double Alpha = 0.01; // ordine di grandezza=h/tempo_episodio_in_sec(al minimo caduta)
 
 void print_mat(double * Q){
