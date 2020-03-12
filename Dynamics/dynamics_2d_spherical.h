@@ -12,6 +12,7 @@
 #define h 0.0001                // Integration step
 #define coeff_friction 0.4      // Block friction coefficient
 #define m_block 100.0          // Block mass
+#define V_THRESHOLD 10E-6
 
 double Va_mod;
 double va[2];
@@ -19,7 +20,7 @@ double L[2];
 double D[2];
 double beta;
 double Fg[2] = {0, -m*g};
-double F_attrito;
+double F_friction;
 double N;
 double Tension[2];
 double Ftot[2]; 
@@ -103,24 +104,24 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     // Compute Block motion
 
     N = m_block*g - Tension[1];
-    F_attrito = coeff_friction*fabs(N);
-    //N = coeff_friction*fabs(m_block*g - *T*sin(theta[0]));
 
-    if ( fabs(v_block[0]) < 10E-6 ){
-        if ( fabs(Tension[0]) > fabs(F_attrito)  ){
+    F_friction = coeff_friction*fabs(N); // the sign is imposed into the equation below by hand
+
+    if ( fabs(v_block[0]) < V_THRESHOLD ){ // blocco fermo
+        if ( fabs(Tension[0]) > fabs(F_friction)  ){
             if (cos(theta[0]) > 0){
-                a_block[0] = (Tension[0] - F_attrito )/m_block;
+                a_block[0] = (Tension[0] - F_friction )/m_block;
             }
             else{
-                a_block[0] = (Tension[0] + F_attrito )/m_block;
+                a_block[0] = (Tension[0] + F_friction )/m_block;
             }
         }
         else { a_block[0] = 0; } 
     }
-    else if ( v_block[0] > 0 ){
+    else if ( v_block[0] > V_THRESHOLD ){  //v_block[0] > 0 ){  
         a_block[0] = (Tension[0] - N )/m_block;
     }
-    else if ( v_block[0] < 0 ){
+    else if ( v_block[0] < -V_THRESHOLD ){   //v_block[0] < 0 ){
         a_block[0] = (Tension[0] + N )/m_block;
     }
 

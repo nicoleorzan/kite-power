@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define STEPS 500000
+#define STEPS 50000
 #define theta0 0.
 #define vtheta0 0.5
 

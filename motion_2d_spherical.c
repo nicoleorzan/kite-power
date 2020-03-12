@@ -108,7 +108,7 @@ int main(int argc, char *argv[]){
 
         t += 1;
 
-        F_vinc = m_blocco*g - T*sin(theta[0]);
+        F_vinc = m_block*g - T*sin(theta[0]);
 
         if (F_vinc < 0) {
             decollato = 1;
@@ -123,14 +123,14 @@ int main(int argc, char *argv[]){
 
     if ( rk[1] > 0.) {
         
-        printf("Alpha, theta0, vtheta0, Wx, Wy, Theta_fin, Vel_theta_fin, V_blocco_fin, Vk-W, F_vinc, Tension, Lift, Drag, Stab, Decol\n");
+        printf("Alpha, theta0, vtheta0, Wx, Wy, Theta_fin, Vel_theta_fin, V_block_fin, Vk-W, F_vinc, Tension, Lift, Drag, Stab, Decol\n");
         
         printf("%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %d, %d\n", \
         alphas[alpha_index], theta0, vtheta0, W[0], W[1], theta[0], theta[1], v_block[0], \
         sqrt((vk[0] - W[0])*(vk[0] - W[0]) + (vk[1] - W[1])*(vk[1] - W[1])), \
         F_vinc, T, lift, drag, stability, decollato);
     } else {
-        printf("Alpha, theta0, vtheta0, WindC, Wx, Wy, Theta_fin, Vel_theta_fin, V_blocco_fin,  Vk-W, F_vinc, Tension, Lift, Drag, Stab, Decol\n");
+        printf("Alpha, theta0, vtheta0, WindC, Wx, Wy, Theta_fin, Vel_theta_fin, V_block_fin,  Vk-W, F_vinc, Tension, Lift, Drag, Stab, Decol\n");
         
         printf("%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %d, %d\n", \
         alphas[alpha_index], theta0, vtheta0, W[0], W[1], 0.00, 0.00, 0.00, \
