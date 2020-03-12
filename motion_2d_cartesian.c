@@ -5,8 +5,8 @@
 #include <stdbool.h>
 
 #define STEPS 500000
-#define theta0 PI/4
-#define vtheta0 0.
+#define theta0 0.
+#define vtheta0 0.5
 
 // ============== FILE INPUT: ATTACK ANGLE AND WIND COEFF AND IF TRAJECTORY IS NEEDED ============
 

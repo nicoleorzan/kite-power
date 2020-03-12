@@ -103,25 +103,10 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     F_aer[0] = L[0] + D[0];
     F_aer[1] = L[1] + D[1];
 
-    /*Tension[0] = -F_aer[0];
-    Tension[1] = -F_aer[1] + m*g;
-
-    F_attrito = -coeff_friction*fabs(m_block*g - Tension[1]);
-
-    if ( fabs(Tension[0]) > fabs(F_attrito) ){
-        a_block[0] = (Tension[0] + F_attrito )/m_block;
-    } else {
-        if ( fabs(v_block[0]) < 10E-6 ){
-            a_block[0] = 0;
-        } else {
-            a_block[0] = (Tension[0] + F_attrito )/m_block;
-        }
-    }*/
-
     if ( fabs(v_block[0]) < 10E-6 ){ // se il blocco e` fermo
         
         denom = R*(m+m_block)/(m*m_block)
-                - cos(*theta)/m_block*(rk[1] - coeff_friction*r_diff[0]*sin(*theta));
+                - cos(*theta)/m_block*(rk[1] + coeff_friction*r_diff[0]*sin(*theta));
 
         *T = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
             + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
