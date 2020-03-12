@@ -11,7 +11,7 @@
 
 #define h 0.0001                // Integration step
 #define coeff_friction 0.4      // Block friction coefficient
-#define m_block 100.0          // Block mass
+#define m_block 100.0           // Block mass
 #define V_THRESHOLD 10E-6
 
 double Va_mod;

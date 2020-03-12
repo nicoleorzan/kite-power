@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define STEPS 50000
+#define STEPS 1000000
 #define theta0 0.
 #define vtheta0 0.5
 
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]){
     double *v_diff = (double*) malloc(2 * sizeof(double)); 
     double *a_diff = (double*) malloc(2 * sizeof(double)); 
 
-    double theta = PI/4.;
+    double theta = theta0;
 
     double r_diff_modulo;
 

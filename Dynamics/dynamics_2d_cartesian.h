@@ -10,8 +10,8 @@
 //#define DEBUG
 
 #define h 0.0001                // Integration step
-#define coeff_friction 0.4       // Block friction coefficient
-#define m_block 100.0          // Block mass
+#define coeff_friction 0.4      // Block friction coefficient
+#define m_block 100.0           // Block mass
 #define V_THRESHOLD 10E-6
 
 double Va_mod;
@@ -42,11 +42,11 @@ void variables_initialization(double * rk, double * vk, double * ak,
     rk[0] = r_block[0] + R*cos(theta);
     rk[1] = r_block[1] + R*sin(theta);
 
-    vk[0] = -R*dtheta*sin(theta);  //0;
-    vk[1] = R*dtheta*cos(theta);  // 0;
+    vk[0] = -R*dtheta*sin(theta);
+    vk[1] = R*dtheta*cos(theta);
 
-    ak[0] = -R*dtheta*dtheta*cos(theta);//0;
-    ak[1] = -R*dtheta*dtheta*sin(theta); //0;
+    ak[0] = -R*dtheta*dtheta*cos(theta);
+    ak[1] = -R*dtheta*dtheta*sin(theta);
 }
 
 void integration_trajectory(double * rk, double * vk, double * ak, // Kite variables
@@ -66,6 +66,8 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     a_diff[0] = ak[0] - a_block[0];
     a_diff[1] = ak[1] - a_block[1];
 
+    //printf("theta=%f\n", *theta);
+    printf("theta=%f, sin theta=%f, cos theta=%f\n",*theta, sin(*theta), cos(*theta));
     *theta = atan2(r_diff[1], r_diff[0]);
                         
     va[0] = vk[0] - W[0];              // Apparent velocity on x
@@ -102,28 +104,28 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     if ( fabs(v_block[0]) < V_THRESHOLD ){ // se il blocco e` fermo
         
         denom = R*(m+m_block)/(m*m_block)
-                - cos(*theta)/m_block*(r_diff[1] - coeff_friction*sin(*theta)*r_diff[0]);
+                - sin(*theta)/m_block*(r_diff[1] - coeff_friction*cos(*theta)*r_diff[0]);
 
         *T = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
             + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
-            - g*(r_diff[1] - coeff_friction*sin(*theta)*r_diff[0]);
+            - g*(r_diff[1] - coeff_friction*cos(*theta)*r_diff[0]);
 
         *T = *T/denom;
 
-        Tension[0] = *T*sin(*theta);
-        Tension[1] = *T*cos(*theta);
+        Tension[0] = *T*cos(*theta);
+        Tension[1] = *T*sin(*theta);
     
         N = m_block*g - Tension[1];
 
-        F_friction = -coeff_friction*fabs(N)*sin(*theta);
+        F_friction = -coeff_friction*fabs(N)*cos(*theta);
 
-        //#ifdef DEBUG
+        #ifdef DEBUG
             printf("v almost zero\nv_block=%.10f\n", v_block[0]);
             printf("*T=%f, theta=%f\n", *T, *theta);
             printf("Tx=%f, Ty=%f\n", Tension[0], Tension[1]);
             printf("F_friction=%f\n", F_friction);
             printf("\n");
-        //#endif
+        #endif
 
         if ( fabs(Tension[0]) > fabs(F_friction) ){
             a_block[0] = ( Tension[0] + F_friction )/m_block;
@@ -131,13 +133,13 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         else { // F_friction = -Tension[0], che implica a_block[0] = 0
             
             denom = R*(m+m_block)/(m*m_block) 
-            - cos(*theta)*r_diff[1]/m_block - sin(*theta)*r_diff[0]/m_block;
+            - sin(*theta)*r_diff[1]/m_block - cos(*theta)*r_diff[0]/m_block;
 
             *T = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m 
                 + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) - g*r_diff[1];
 
-            Tension[0] = *T*sin(*theta);
-            Tension[1] = *T*cos(*theta);
+            Tension[0] = *T*cos(*theta);
+            Tension[1] = *T*sin(*theta);
 
             F_friction = -Tension[0];
             
@@ -147,7 +149,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     else { // il blocco si muove
 
         denom = R*(m+m_block)/(m*m_block)
-                - cos(*theta)/m_block*(r_diff[1] - coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
+                - sin(*theta)/m_block*(r_diff[1] - coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
 
         *T = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
             + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
@@ -155,22 +157,22 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
         *T = *T/denom;
 
-        Tension[0] = *T*sin(*theta);
-        Tension[1] = *T*cos(*theta);
+        Tension[0] = *T*cos(*theta);
+        Tension[1] = *T*sin(*theta);
     
         N = m_block*g - Tension[1];
 
         F_friction = -coeff_friction*fabs(N)*v_block[0]/fabs(v_block[0]);
 
-        a_block[0] = (Tension[0] + F_friction )/m_block;
+        a_block[0] = ( Tension[0] + F_friction )/m_block;
 
-    //#ifdef DEBUG
+    #ifdef DEBUG
         printf("PARTE2\nv_block=%.10f\n", v_block[0]);
         printf("*T=%f, theta=%f\n", *T, *theta);
         printf("Tx=%f, Ty=%f\n", Tension[0], Tension[1]);
         printf("F_friction=%f\n", F_friction);
         printf("\n");
-    //#endif
+    #endif
     }
 
     a_block[1] = 0;
