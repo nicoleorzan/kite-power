@@ -101,13 +101,14 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     Tension[0] = *T*cos(theta[0]);
     Tension[1] = *T*sin(theta[0]);
 
-    // Compute Block motion
+    // Computing Block motion
 
     N = m_block*g - Tension[1];
 
     F_friction = coeff_friction*fabs(N); // the sign is imposed into the equation below by hand
 
-    if ( fabs(v_block[0]) < V_THRESHOLD ){ // blocco fermo
+    if ( fabs(v_block[0]) < V_THRESHOLD ){ // block not moving
+
         if ( fabs(Tension[0]) > fabs(F_friction)  ){
             if (cos(theta[0]) > 0){
                 a_block[0] = (Tension[0] - F_friction )/m_block;
@@ -117,11 +118,12 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
             }
         }
         else { a_block[0] = 0; } 
+
     }
-    else if ( v_block[0] > V_THRESHOLD ){  //v_block[0] > 0 ){  
+    else if ( v_block[0] > V_THRESHOLD ){  // block moving to the rigth
         a_block[0] = (Tension[0] - N )/m_block;
     }
-    else if ( v_block[0] < -V_THRESHOLD ){   //v_block[0] < 0 ){
+    else if ( v_block[0] < -V_THRESHOLD ){  // block moving to the left
         a_block[0] = (Tension[0] + N )/m_block;
     }
 
@@ -150,7 +152,6 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     // Check: Sum of total forces on kite
 
     Ftot[0] = L[0] + D[0] + Fg[0] - Tension[0];
-
     Ftot[1] = L[1] + D[1] + Fg[1] - Tension[1];
 
     // Power

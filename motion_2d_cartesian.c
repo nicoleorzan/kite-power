@@ -141,23 +141,12 @@ int main(int argc, char *argv[]){
         stability = 1;
     }*/
 
-    if ( rk[1] > 0.) {
-        printf("iter, alpha, theta0, Theta_fin, v_block_fin_x, F_vinc, ");
-        printf("Tension, Lift, Drag, Wind_x, Wind_y\n");
-        
-        printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n", \
-        t, alphas[alpha_index], theta0, theta, v_block[0], \
-        F_vinc, T, lift, drag, W[0], W[1]);
-
-    } else {
-        printf("iter, alpha, theta0, Theta_fin, v_block_fin_x, F_vinc, ");
-        printf("Tension, Lift, Drag, Wind_x, Wind_y\n");
-
-        printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n", \
-        t, alphas[alpha_index], theta0, theta, v_block[0],\
-        F_vinc, T, lift, drag, W[0], W[1]);
-    }
-
+    printf("iter, alpha, theta0, Theta_fin, v_block_fin_x, F_vinc, ");
+    printf("Tension, Lift, Drag, Wind_x, Wind_y\n");
+    
+    printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n", \
+    t, alphas[alpha_index], theta0, theta, v_block[0], \
+    F_vinc, T, lift, drag, W[0], W[1]);
 
     free(rk);
     free(rk1);
@@ -180,4 +169,4 @@ int main(int argc, char *argv[]){
 
     return 0;
 
-    }
+}

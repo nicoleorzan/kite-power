@@ -66,8 +66,6 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     a_diff[0] = ak[0] - a_block[0];
     a_diff[1] = ak[1] - a_block[1];
 
-    //printf("theta=%f\n", *theta);
-    printf("theta=%f, sin theta=%f, cos theta=%f\n",*theta, sin(*theta), cos(*theta));
     *theta = atan2(r_diff[1], r_diff[0]);
                         
     va[0] = vk[0] - W[0];              // Apparent velocity on x
@@ -101,7 +99,9 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     F_aer[0] = L[0] + D[0];
     F_aer[1] = L[1] + D[1];
 
-    if ( fabs(v_block[0]) < V_THRESHOLD ){ // se il blocco e` fermo
+    // Computing block motion
+
+    if ( fabs(v_block[0]) < V_THRESHOLD ){ // block not moving
         
         denom = R*(m+m_block)/(m*m_block)
                 - sin(*theta)/m_block*(r_diff[1] - coeff_friction*cos(*theta)*r_diff[0]);
@@ -130,7 +130,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         if ( fabs(Tension[0]) > fabs(F_friction) ){
             a_block[0] = ( Tension[0] + F_friction )/m_block;
         }
-        else { // F_friction = -Tension[0], che implica a_block[0] = 0
+        else { // F_friction = -Tension[0], ==> a_block[0] = 0
             
             denom = R*(m+m_block)/(m*m_block) 
             - sin(*theta)*r_diff[1]/m_block - cos(*theta)*r_diff[0]/m_block;
@@ -146,7 +146,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
             a_block[0] = ( Tension[0] + F_friction )/m_block;
         } 
     }
-    else { // il blocco si muove
+    else { // block moving
 
         denom = R*(m+m_block)/(m*m_block)
                 - sin(*theta)/m_block*(r_diff[1] - coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
@@ -179,7 +179,6 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     v_block[0] = v_block[0] + h*a_block[0]; 
     v_block[1] = v_block[1] + h*a_block[1];
-
 
     r_block[0] = r_block[0] + h*v_block[0]; 
     r_block[1] = r_block[1] + h*v_block[1];
