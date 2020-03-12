@@ -106,7 +106,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     if ( fabs(v_block[0]) < 10E-6 ){ // se il blocco e` fermo
         
         denom = R*(m+m_block)/(m*m_block)
-                - cos(*theta)/m_block*(rk[1] + coeff_friction*r_diff[0]*sin(*theta));
+                - cos(*theta)/m_block*(rk[1] - coeff_friction*r_diff[0]*sin(*theta));
 
         *T = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
             + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
@@ -132,12 +132,26 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         if ( fabs(Tension[0]) > fabs(F_attrito) ){
             a_block[0] = (Tension[0] + F_attrito )/m_block;
         }
-        else { a_block[0] = 0; } 
+        else { //// rifare il conto mettendo Tension[0] = -F_attrito, che implica a_block[0] = 0
+            
+            denom = R*(m+m_block)/(m*m_block) 
+            - cos(*theta)*rk[1]/m_block - sin(*theta)*r_diff[0]/m_block;
+
+            *T = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m 
+                + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) - g*rk[1];
+
+            Tension[0] = *T*sin(*theta);
+            Tension[1] = *T*cos(*theta);
+
+            F_attrito = -Tension[0];
+            
+            a_block[0] = (Tension[0] + F_attrito )/m_block;
+        } 
     }
-    else { // v_blocco > 10e-6
+    else { // il blocco si muove
 
         denom = R*(m+m_block)/(m*m_block)
-                - cos(*theta)/m_block*(rk[1] - coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
+                - cos(*theta)/m_block*(r_diff[1] - coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
 
         *T = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
             + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
@@ -152,10 +166,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
         F_attrito = -coeff_friction*fabs(N)*v_block[0]/fabs(v_block[0]);
 
-        if ( fabs(Tension[0]) > fabs(F_attrito) ){
-            a_block[0] = (Tension[0] + F_attrito )/m_block;
-        }
-        else { a_block[0] = 0; }
+        a_block[0] = (Tension[0] + F_attrito )/m_block;
 
     #ifdef DEBUG
         printf("PARTE2\nv_block=%.10f\n", v_block[0]);
