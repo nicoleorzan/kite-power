@@ -7,8 +7,6 @@
 #ifndef __dynamics__
 #define __dynamics__
 
-#define PI 3.1415926535897932384626433
-
 //#define DEBUG
 
 #define h 0.00001                // Integration step

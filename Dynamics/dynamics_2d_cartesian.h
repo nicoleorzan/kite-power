@@ -7,8 +7,6 @@
 #ifndef __dynamics__
 #define __dynamics__
 
-#define PI 3.1415926535897932384626433
-
 //#define DEBUG
 
 #define h 0.0001                // Integration step
@@ -17,28 +15,25 @@
 
 double W;
 double Va_mod;
-double T_denom;
-double denom1, denom2;
-double T1, T2;
+double denom;
 double va[2];
-double L[2], Lc;
-double D[2], Dc;
+double L[2];
+double D[2];
 double t2_mod, t3_mod;
 double Fg[2] = {0, -m*g};
 double F_aer[2];
-double F_attrito[2];
-double F_attrito_mod;
+double F_attrito;
 double N;
 double beta;
 double Tension[2];
-double r_diff_mod;
 
 double T_orizz;
 double F_attr_sign;
 double Ftot[3]; 
 
-void variables_initialization(double * rk, double * vk, double * ak, double theta,
-                              double * r_block, double * v_block, double * a_block){
+void variables_initialization(double * rk, double * vk, double * ak,
+                             double theta, double dtheta,
+                             double * r_block, double * v_block, double * a_block){
     r_block[0] = 0;
     r_block[1] = 0;
 
@@ -48,14 +43,14 @@ void variables_initialization(double * rk, double * vk, double * ak, double thet
     a_block[0] = 0;
     a_block[1] = 0;
 
-    rk[0] = r_block[0] + R*sin(theta);
-    rk[1] = r_block[1] + R*cos(theta);
+    rk[0] = r_block[0] + R*cos(theta);
+    rk[1] = r_block[1] + R*sin(theta);
 
-    vk[0] = 0;
-    vk[1] = 0;
+    vk[0] = -R*dtheta*sin(theta);  //0;
+    vk[1] = R*dtheta*cos(theta);  // 0;
 
-    ak[0] = 0;
-    ak[1] = 0;
+    ak[0] = -R*dtheta*dtheta*cos(theta);//0;
+    ak[1] = -R*dtheta*dtheta*sin(theta); //0;
 }
 
 void integration_trajectory(double * rk, double * vk, double * ak, // Kite variables
@@ -63,149 +58,175 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
                             double * r_diff, double * v_diff, double * a_diff, 
                             double * theta,
                             int alpha,
-                            double * W, double * lift, double * drag,
+                            double * W, double * lc, double * dc,
                             double * T, int it){
 
-r_diff[0] = rk[0] - r_block[0];
-r_diff[1] = rk[1] - r_block[1];
+    r_diff[0] = rk[0] - r_block[0];
+    r_diff[1] = rk[1] - r_block[1];
 
-*theta = atan(r_diff[1]/r_diff[0]);
+    v_diff[0] = vk[0] - v_block[0];
+    v_diff[1] = vk[1] - v_block[1];
 
-r_diff_mod = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1]);
-                       
-va[0] = vk[0] - W[0];              // Apparent velocity on x
-va[1] = vk[1] - W[1];              // Apparent velocity on z
+    a_diff[0] = ak[0] - a_block[0];
+    a_diff[1] = ak[1] - a_block[1];
 
-Va_mod = sqrt(va[0]*va[0] + va[1]*va[1]);
+    *theta = atan2(r_diff[1], r_diff[0]);
+                        
+    va[0] = vk[0] - W[0];              // Apparent velocity on x
+    va[1] = vk[1] - W[1];              // Apparent velocity on z
 
-// Computing Lift and Drag     
+    Va_mod = sqrt(va[0]*va[0] + va[1]*va[1]);
 
-beta = atan2(va[1], va[0]);
+    // Computing Lift and Drag     
 
-Lc = 0.5*rho*CL_alpha[alpha]*A*Va_mod*Va_mod;
-*lift = Lc;
+    beta = atan2(va[1], va[0]);
 
-Dc = 0.5*rho*CD_alpha[alpha]*A*Va_mod*Va_mod;
-*drag = Dc;
+    *lc = 0.5*rho*CL_alpha[alpha]*A*Va_mod*Va_mod;
 
-// Lift (x, z)
+    *dc = 0.5*rho*CD_alpha[alpha]*A*Va_mod*Va_mod;
 
-if (beta > - PI/2. && beta < PI/2.){
-    L[0] = Lc*cos(beta + PI/2.);
-    L[1] = Lc*sin(beta + PI/2.);
-} else {
-    L[0] = Lc*cos(beta - PI/2.);
-    L[1] = Lc*sin(beta - PI/2.);
-}
+    // Lift (x, z)
 
-// Drag (x, z)
+    if (beta > - PI/2. && beta < PI/2.){
+        L[0] = *lc*cos(beta + PI/2.);
+        L[1] = *lc*sin(beta + PI/2.);
+    } else {
+        L[0] = *lc*cos(beta - PI/2.);
+        L[1] = *lc*sin(beta - PI/2.);
+    }
 
-D[0] = Dc*cos(beta + PI);
-D[1] = Dc*sin(beta + PI);       
+    // Drag (x, z)
 
-F_aer[0] = L[0] + D[0];
-F_aer[1] = L[1] + D[1];
+    D[0] = *dc*cos(beta + PI);
+    D[1] = *dc*sin(beta + PI);       
 
-if (v_block[0] != 0){
+    F_aer[0] = L[0] + D[0];
+    F_aer[1] = L[1] + D[1];
 
-    denom1 = R*(m+m_block)/(m*m_block)
-            - cos(*theta)/m_block*(rk[1] - coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
+    /*Tension[0] = -F_aer[0];
+    Tension[1] = -F_aer[1] + m*g;
 
-    T1 = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
-        + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
-        - g*(r_diff[1] + coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
+    F_attrito = -coeff_friction*fabs(m_block*g - Tension[1]);
 
-    T1 = T1/denom1;
+    if ( fabs(Tension[0]) > fabs(F_attrito) ){
+        a_block[0] = (Tension[0] + F_attrito )/m_block;
+    } else {
+        if ( fabs(v_block[0]) < 10E-6 ){
+            a_block[0] = 0;
+        } else {
+            a_block[0] = (Tension[0] + F_attrito )/m_block;
+        }
+    }*/
 
-    *T = T1;
+    if ( fabs(v_block[0]) < 10E-6 ){ // se il blocco e` fermo
+        
+        denom = R*(m+m_block)/(m*m_block)
+                - cos(*theta)/m_block*(rk[1] - coeff_friction*r_diff[0]*sin(*theta));
 
-    Tension[0] = *T*sin(*theta);
-    Tension[1] = *T*cos(*theta);
- 
-    N = m_block*g - Tension[1];
+        *T = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
+            + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
+            - g*(r_diff[1] - coeff_friction*r_diff[0]*sin(*theta));
 
-    F_attrito_mod = coeff_friction*fabs(N);
+        *T = *T/denom;
 
-    F_attrito[0] = -F_attrito_mod*v_block[0]/fabs(v_block[0]*v_block[0] + v_block[1]*v_block[1]);
-
-    //printf("vblock0=%f\n", v_block[0]); 
-    //printf("denom1=%f\n", denom1); 
-}
-else if (v_block[0] == 0){
+        Tension[0] = *T*sin(*theta);
+        Tension[1] = *T*cos(*theta);
     
-    denom2 = R*(m+m_block)/(m*m_block)
-        - sin(*theta)/m_block*r_diff[0] - cos(*theta)*rk[1]/m_block;
-    T2 = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
-        + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
-        - g*r_diff[1];
+        N = m_block*g - Tension[1];
 
-    T2 = T2/denom2;
+        F_attrito = -coeff_friction*fabs(N)*sin(*theta);
 
-    *T = T2;
+        #ifdef DEBUG
+            printf("v_block=%.10f\n", v_block[0]);
+            printf("*T=%f, theta=%f\n", *T, *theta);
+            printf("Tx=%f, Ty=%f\n", Tension[0], Tension[1]);
+            printf("F_attrito=%f\n", F_attrito);
+            printf("\n");
+        #endif
 
-    Tension[0] = *T*sin(*theta);
-    Tension[1] = *T*cos(*theta);
- 
-    N = m_block*g - Tension[1];
+        if ( fabs(Tension[0]) > fabs(F_attrito) ){
+            a_block[0] = (Tension[0] + F_attrito )/m_block;
+        }
+        else { a_block[0] = 0; } 
+    }
+    else { // v_blocco > 10e-6
 
-    F_attrito[0] = -Tension[0];
-    //printf("vblock0=%f\n", v_block[0]); 
-}
+        denom = R*(m+m_block)/(m*m_block)
+                - cos(*theta)/m_block*(rk[1] - coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
 
-// sulla forza d'attrito va messo il meno a mano?? forse si!
+        *T = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
+            + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
+            - g*(r_diff[1] - coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
 
-a_block[0] = (Tension[0] + F_attrito[0])/m_block;
-a_block[1] = 0;
+        *T = *T/denom;
 
-v_block[0] = v_block[0] + h*a_block[0]; 
-v_block[1] = v_block[1] + h*a_block[1];
+        Tension[0] = *T*sin(*theta);
+        Tension[1] = *T*cos(*theta);
+    
+        N = m_block*g - Tension[1];
 
-if (it%10000 == 0){
-    //printf("Lx=%f, Ly=%f, Lz=%f\n", L[0], L[1], L[2]);
-    //printf("Tx=%f, Ty=%f, Tz=%f\n", Tension[0], Tension[1], Tension[2]);
-    //printf("Fx=%f, vblockx=%f\n", F_attrito[0], v_block[0]);
-}
+        F_attrito = -coeff_friction*fabs(N)*v_block[0]/fabs(v_block[0]);
 
-r_block[0] = r_block[0] + h*v_block[0]; 
-r_block[1] = r_block[1] + h*v_block[1];
+        if ( fabs(Tension[0]) > fabs(F_attrito) ){
+            a_block[0] = (Tension[0] + F_attrito )/m_block;
+        }
+        else { a_block[0] = 0; }
 
-ak[0] = (D[0] + L[0] - Tension[0])/m;
-ak[1] = (D[1] + L[1] - Tension[1] - m*g)/m;
+    #ifdef DEBUG
+        printf("PARTE2\nv_block=%.10f\n", v_block[0]);
+        printf("*T=%f, theta=%f\n", *T, *theta);
+        printf("Tx=%f, Ty=%f\n", Tension[0], Tension[1]);
+        printf("F_attrito=%f\n", F_attrito);
+        printf("\n");
+    #endif
+    }
 
-vk[0] = vk[0] + h*ak[0];
-vk[1] = vk[1] + h*ak[1];
+    a_block[1] = 0;
 
-rk[0] = rk[0] + h*vk[0];
-rk[1] = rk[1] + h*vk[1];
+    v_block[0] = v_block[0] + h*a_block[0]; 
+    v_block[1] = v_block[1] + h*a_block[1];
 
-// Check: Sum of total forces
 
-Ftot[0] = L[0] + D[0] + Fg[0] + Tension[0];
-Ftot[1] = L[1] + D[1] + Fg[1] + Tension[1];
+    r_block[0] = r_block[0] + h*v_block[0]; 
+    r_block[1] = r_block[1] + h*v_block[1];
 
-#ifdef DEBUG
-    printf("N=%f\n", N);
-    printf("Vw[0]= %f, Vw[1]=%f\n", W[0], W[1]);
-    printf("Vkx=%f, Vky=%f\n", vk[0], vk[1]); 
-    printf("Va_mod=%f, va[0]=%f, va[1]=%fn", Va_mod, va[0], va[1]); 
-    printf("L[0]=%f\n", L[0]); 
-    printf("L[1]=%f\n", L[1]); 
-    printf("D[0]=%f\n", D[0]); 
-    printf("D[1]=%f\n", D[1]); 
-    printf("Fg[0]=%f\n", Fg[0]); 
-    printf("Fg[1]=%f\n", Fg[1]);
-    printf("Tx=%f, Ty=%f\n", Tension[0], Tension[1]);
-    printf("*theta = %f\n", *theta);
-    printf("a_block[0] = %f, a_block[1] = %f\n", a_block[0], a_block[1]);
-    printf("v_block[0] = %f, v_block[1] = %f\n", v_block[0], v_block[1]);
-    printf("r_block[0] = %f, r_block[1] = %f\n", r_block[0], r_block[1]);
-    printf("rk[0]= %f, rk[1]=%f\n", rk[0], rk[1]);
-    printf("vk[0]= %f, vk[1]=%f\n", vk[0], vk[1]);
-    printf("ak[0]= %f, ak[1]=%f\n", ak[0], ak[1]);
-    printf("forze totali x:%f\n", Ftot[0]);
-    printf("forze totali y:%f\n", Ftot[1]);
-    printf("\n");
-#endif    
+    ak[0] = (D[0] + L[0] - Tension[0])/m;
+    ak[1] = (D[1] + L[1] - Tension[1] - m*g)/m;
+
+    vk[0] = vk[0] + h*ak[0];
+    vk[1] = vk[1] + h*ak[1];
+
+    rk[0] = rk[0] + h*vk[0];
+    rk[1] = rk[1] + h*vk[1];
+
+    // Check: Sum of total forces
+
+    Ftot[0] = L[0] + D[0] + Fg[0] + Tension[0];
+    Ftot[1] = L[1] + D[1] + Fg[1] + Tension[1];
+
+    #ifdef DEBUG
+        printf("N=%f\n", N);
+        printf("Vw[0]= %f, Vw[1]=%f\n", W[0], W[1]);
+        printf("Vkx=%f, Vky=%f\n", vk[0], vk[1]); 
+        printf("Va_mod=%f, va[0]=%f, va[1]=%f\n", Va_mod, va[0], va[1]); 
+        printf("L[0]=%f\n", L[0]); 
+        printf("L[1]=%f\n", L[1]); 
+        printf("D[0]=%f\n", D[0]); 
+        printf("D[1]=%f\n", D[1]); 
+        printf("Fg[0]=%f\n", Fg[0]); 
+        printf("Fg[1]=%f\n", Fg[1]);
+        printf("Tx=%f, Ty=%f\n", Tension[0], Tension[1]);
+        printf("*theta = %f\n", *theta);
+        printf("a_block[0] = %f, a_block[1] = %f\n", a_block[0], a_block[1]);
+        printf("v_block[0] = %f, v_block[1] = %f\n", v_block[0], v_block[1]);
+        printf("r_block[0] = %f, r_block[1] = %f\n", r_block[0], r_block[1]);
+        printf("rk[0]= %f, rk[1]=%f\n", rk[0], rk[1]);
+        printf("vk[0]= %f, vk[1]=%f\n", vk[0], vk[1]);
+        printf("ak[0]= %f, ak[1]=%f\n", ak[0], ak[1]);
+        printf("forze totali x:%f\n", Ftot[0]);
+        printf("forze totali y:%f\n", Ftot[1]);
+        printf("\n");
+    #endif    
 
 }
 

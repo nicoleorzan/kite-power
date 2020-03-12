@@ -4,9 +4,9 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define STEPS 20000000
-#define n_alphas 16
-#define theta0 PI/4.
+#define STEPS 500000
+#define theta0 PI/4
+#define vtheta0 0.
 
 // ============== FILE INPUT: ATTACK ANGLE AND WIND COEFF AND IF TRAJECTORY IS NEEDED ============
 
@@ -25,7 +25,7 @@ int main(int argc, char *argv[]){
     W[0] = atof( *(argv + 2) );
     W[1] = atof( *(argv + 3) );
 
-    double wind_coeff = 0;
+    //double wind_coeff = 0;
 
     bool file_needed = atof( *(argv + 4) );
 
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]){
         return 0;
     }
 
-     // ========================= CREATING TRAJECTORY OUTPUT FILE ==========================
+    // ========================= CREATING TRAJECTORY OUTPUT FILE ==========================
 
     char text[30];
     time_t now = time(NULL);
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
     FILE *trajectory, *wind;
     trajectory = fopen("out.txt", "w+"); // fopen(filename_trajectory, "w+");
 
-    fprintf(trajectory, "t       x_kite       y_kite      x_block      y_block      theta      r_diff\n");
+    fprintf(trajectory, "t       x_kite       z_kite      x_block      z_block      theta      r_diff\n");
 
     // ============================ VARIABLES DEFINITION ============================
 
@@ -65,28 +65,27 @@ int main(int argc, char *argv[]){
     double *vk = (double*) malloc(2 * sizeof(double)); 
     double *ak = (double*) malloc(2 * sizeof(double)); 
 
-    double *r_diff = (double*) malloc(2 * sizeof(double)); 
-    double *v_diff = (double*) malloc(2 * sizeof(double)); 
-    double *a_diff = (double*) malloc(2 * sizeof(double)); 
-
     // block motion vectors from fixed origin  (x, z)
     double *r_block = (double*) malloc(2 * sizeof(double)); 
     double *v_block = (double*) malloc(2 * sizeof(double));
     double *a_block = (double*) malloc(2 * sizeof(double));  
 
+    double *r_diff = (double*) malloc(2 * sizeof(double)); 
+    double *v_diff = (double*) malloc(2 * sizeof(double)); 
+    double *a_diff = (double*) malloc(2 * sizeof(double)); 
+
     double theta = PI/4.;
 
-    double r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1]);
+    double r_diff_modulo;
 
     double lift=0, drag=0;
-    double fluct = 0;
     double T = 0;
     double F_vinc;
     double theta_star;
     int stability = 0;
     int decollato = 0;
 
-    variables_initialization(rk, vk, ak, theta0, r_block, v_block, a_block);
+    variables_initialization(rk, vk, ak, theta0, vtheta0, r_block, v_block, a_block);
 
     int t = 0;   
 
@@ -94,15 +93,13 @@ int main(int argc, char *argv[]){
     
     for (int i=0; i<STEPS; i++){
 
-        //printf("vblockx=%f\n",v_block[0]);
-
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, \
                             r_diff, v_diff, a_diff, &theta, alpha_index, W, &lift, &drag, &T, i);
         
-        if (m_block*g < T*cos(theta)){
+        /*if (m_block*g < T*cos(theta)){
             printf("m_block*g < T*cos(theta), exiting\n");
             break;
-        }
+        }*/
 
         r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1]);
 
@@ -113,7 +110,7 @@ int main(int argc, char *argv[]){
             break;
         }
 
-        
+
         theta_star = atan((lift - m*g)/drag); // e` giusto calcolarlo ad ogni step??
 
         if (i%1000 == 0){
@@ -131,6 +128,10 @@ int main(int argc, char *argv[]){
         t += 1;
 
         F_vinc = m_block*g - T*sin(theta);
+
+        if (F_vinc < 0) {
+            decollato = 1;
+        }
 
     }
 

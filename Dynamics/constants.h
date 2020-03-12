@@ -1,6 +1,8 @@
 #ifndef constants
 #define constants
 
+#define PI 3.1415926535897932384626433
+
 //physical constants
 #define rho 1.225           	// kg/m^3
 #define g 9.81              	// m/s^2

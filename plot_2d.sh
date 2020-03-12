@@ -1,7 +1,7 @@
 #!/bin/bash      
 
 gnuplot -e "
-set xrange [-100:100];
+set xrange [-20:450];
 set yrange [-0:70];
 set ticslevel 0;
 
@@ -9,7 +9,7 @@ set xlabel 'x';
 set ylabel 'y';
 set nokey;
 
-filedata='out';
+filedata='out.txt';
 n = system(sprintf('cat %s | wc -l', filedata));
 
 do for [j=1:n-1] {

@@ -24,7 +24,8 @@ int main(int argc, char *argv[]){
     double W[2];
     W[0] = atof( *(argv + 2) );
     W[1] = atof( *(argv + 3) );
-    double wind_coeff = 0;
+
+    //double wind_coeff = 0;
 
     bool file_needed = atof( *(argv + 4) );
 
@@ -33,7 +34,7 @@ int main(int argc, char *argv[]){
         return 0;
     }
 
-     // ========================= CREATING TRAJECTORY OUTPUT FILE ==========================
+    // ========================= CREATING TRAJECTORY OUTPUT FILE ==========================
 
     char text[30];
     time_t now = time(NULL);
@@ -54,7 +55,7 @@ int main(int argc, char *argv[]){
     FILE *trajectory, *wind;
     trajectory = fopen("out.txt", "w+"); // fopen(filename_trajectory, "w+");
 
-    fprintf(trajectory, "t         x_kite          z_kite         x_blocco         z_blocco       wind_x      wind_y      v_blocco\n");
+    fprintf(trajectory, "t         x_kite          z_kite         x_block         z_block       wind_x      wind_y      v_block\n");
 
     // ============================ VARIABLES DEFINITION ============================
 
@@ -64,12 +65,13 @@ int main(int argc, char *argv[]){
     double *ak = (double*) malloc(2 * sizeof(double)); 
 
     // block motion vectors from fixed origin  (x, z)
-    double *x_blocco = (double*) malloc(2 * sizeof(double)); 
-    double *v_blocco = (double*) malloc(2 * sizeof(double));
-    double *a_blocco = (double*) malloc(2 * sizeof(double));  
+    double *r_block = (double*) malloc(2 * sizeof(double)); 
+    double *v_block = (double*) malloc(2 * sizeof(double));
+    double *a_block = (double*) malloc(2 * sizeof(double));  
 
     // theta, dtheta, ddtheta of kite from block sdr
-    double *theta = (double*) malloc(3 * sizeof(double));  
+    double *theta = (double*) malloc(3 * sizeof(double)); 
+     
     double lift=0, drag=0;
     double T = 0;
     double F_vinc;
@@ -77,7 +79,7 @@ int main(int argc, char *argv[]){
     int stability = 0;
     int decollato = 0;
 
-    variables_initialization(x_blocco, v_blocco, a_blocco, theta, rk, vk, ak, theta0, vtheta0);
+    variables_initialization(rk, vk, ak, theta0, vtheta0, r_block, v_block, a_block, theta);
 
     int t = 0;   
 
@@ -87,13 +89,13 @@ int main(int argc, char *argv[]){
 
         //streamfunction(rk, &W[0], &W[1]);
 
-        integration_trajectory(rk, vk, ak, x_blocco, v_blocco, a_blocco, theta, &T, alpha_index, \
+        integration_trajectory(rk, vk, ak, r_block, v_block, a_block, theta, &T, alpha_index, \
                              W, &lift, &drag);
         
         if (rk[1] <= 0.) {
             printf("Kite Fall, steps %d, z<0, break\n", i);
             fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f     %f\n", \
-                    t, rk[0], 0., x_blocco[0], x_blocco[1], W[0], W[1], v_blocco[0]);
+                    t, rk[0], 0., r_block[0], r_block[1], W[0], W[1], v_block[0]);
             break;
         }
         
@@ -101,7 +103,7 @@ int main(int argc, char *argv[]){
 
         if (i%1000 == 0){
             fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f     %f\n", \
-                    t, rk[0], rk[1], x_blocco[0], x_blocco[1], W[0], W[1], v_blocco[0]);
+                    t, rk[0], rk[1], r_block[0], r_block[1], W[0], W[1], v_block[0]);
         }
 
         t += 1;
@@ -121,17 +123,17 @@ int main(int argc, char *argv[]){
 
     if ( rk[1] > 0.) {
         
-        printf("Alpha, theta0, vtheta0, WindC, Wx, Wy, Theta_fin, Vel_theta_fin, V_blocco_fin, Vk-W, F_vinc, Tension, Lift, Drag, Stab, Decol\n");
+        printf("Alpha, theta0, vtheta0, Wx, Wy, Theta_fin, Vel_theta_fin, V_blocco_fin, Vk-W, F_vinc, Tension, Lift, Drag, Stab, Decol\n");
         
-        printf("%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %d, %d\n", \
-        alphas[alpha_index], theta0, vtheta0, wind_coeff, W[0], W[1], theta[0], theta[1], v_blocco[0], \
+        printf("%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %d, %d\n", \
+        alphas[alpha_index], theta0, vtheta0, W[0], W[1], theta[0], theta[1], v_block[0], \
         sqrt((vk[0] - W[0])*(vk[0] - W[0]) + (vk[1] - W[1])*(vk[1] - W[1])), \
         F_vinc, T, lift, drag, stability, decollato);
     } else {
         printf("Alpha, theta0, vtheta0, WindC, Wx, Wy, Theta_fin, Vel_theta_fin, V_blocco_fin,  Vk-W, F_vinc, Tension, Lift, Drag, Stab, Decol\n");
         
-        printf("%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %d, %d\n", \
-        alphas[alpha_index], theta0, vtheta0, wind_coeff, W[0], W[1], 0.00, 0.00, 0.00, \
+        printf("%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %d, %d\n", \
+        alphas[alpha_index], theta0, vtheta0, W[0], W[1], 0.00, 0.00, 0.00, \
         sqrt((0. - W[0])*(0. - W[0]) + (0. - W[1])*(0. - W[1])) , \
         F_vinc, T, lift, drag, stability, decollato);
     }
@@ -140,9 +142,10 @@ int main(int argc, char *argv[]){
     free(vk);
     free(ak);
 
-    free(x_blocco);
-    free(v_blocco);
-    free(a_blocco);
+    free(r_block);
+    free(v_block);
+    free(a_block);
+
     free(theta);
 
     fclose(trajectory);

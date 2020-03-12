@@ -11,7 +11,7 @@ set ylabel 'y';
 set zlabel 'z';
 col = 3;
 
-filedata = 'out';
+filedata = 'out.txt';
 n = system(sprintf('cat %s | wc -l', filedata));
 
 do for [j=1:n-1] {
