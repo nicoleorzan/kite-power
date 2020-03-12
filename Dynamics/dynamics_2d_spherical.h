@@ -11,18 +11,20 @@
 
 #define h 0.0001                // Integration step
 #define coeff_friction 0.4      // Block friction coefficient
-#define m_blocco 100.0          // Block mass
+#define m_block 100.0          // Block mass
 
 double Va_mod;
 double va[2];
 double L[2];
 double D[2];
-double Fg[2] = {0, -m*g};
-double F_perpendic;
-double theta_star;
 double beta;
+double Fg[2] = {0, -m*g};
+double F_attrito;
+double N;
 double Tension[2];
 double Ftot[2]; 
+
+double theta_star;
 
 void variables_initialization(double * rk, double * vk, double * ak, 
                             double theta0, double vtheta0,
@@ -62,6 +64,8 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     Va_mod = sqrt(va[0]*va[0] + va[1]*va[1]);
 
+    // Computing Lift and Drag
+
     beta = atan2(va[1], va[0]);
 
     *lc = 0.5*rho*CL_alpha[alpha]*A*Va_mod*Va_mod;
@@ -98,24 +102,26 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     // Compute Block motion
 
-    F_perpendic = coeff_friction*fabs(m_blocco*g - *T*sin(theta[0]));
+    N = m_block*g - Tension[1];
+    F_attrito = coeff_friction*fabs(N);
+    //N = coeff_friction*fabs(m_block*g - *T*sin(theta[0]));
 
     if ( fabs(v_block[0]) < 10E-6 ){
-        if ( abs(Tension[0]) > abs(F_perpendic)  ){
+        if ( fabs(Tension[0]) > fabs(F_attrito)  ){
             if (cos(theta[0]) > 0){
-                a_block[0] = (Tension[0] - F_perpendic )/m_blocco;
+                a_block[0] = (Tension[0] - F_attrito )/m_block;
             }
             else{
-                a_block[0] = (Tension[0] + F_perpendic )/m_blocco;
+                a_block[0] = (Tension[0] + F_attrito )/m_block;
             }
         }
         else { a_block[0] = 0; } 
     }
     else if ( v_block[0] > 0 ){
-        a_block[0] = (Tension[0] - F_perpendic )/m_blocco;
+        a_block[0] = (Tension[0] - N )/m_block;
     }
     else if ( v_block[0] < 0 ){
-        a_block[0] = (Tension[0] + F_perpendic )/m_blocco;
+        a_block[0] = (Tension[0] + N )/m_block;
     }
 
     a_block[1] = 0;

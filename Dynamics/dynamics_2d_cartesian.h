@@ -11,25 +11,20 @@
 
 #define h 0.0001                // Integration step
 #define coeff_friction 0.4       // Block friction coefficient
-#define m_block 1000.0          // Block mass
+#define m_block 100.0          // Block mass
 
-double W;
 double Va_mod;
-double denom;
 double va[2];
 double L[2];
 double D[2];
-double t2_mod, t3_mod;
+double beta;
 double Fg[2] = {0, -m*g};
-double F_aer[2];
 double F_attrito;
 double N;
-double beta;
-double Tension[2];
+double Tension[2], denom;
+double Ftot[2]; 
 
-double T_orizz;
-double F_attr_sign;
-double Ftot[3]; 
+double F_aer[2];
 
 void variables_initialization(double * rk, double * vk, double * ak,
                              double theta, double dtheta,
