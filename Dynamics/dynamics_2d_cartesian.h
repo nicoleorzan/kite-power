@@ -9,9 +9,7 @@
 
 //#define DEBUG
 
-#define h 0.0001                // Integration step
 #define coeff_friction 0.4      // Block friction coefficient
-#define m_block 100.0           // Block mass
 #define V_THRESHOLD 10E-6
 
 double Va_mod;
@@ -146,7 +144,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
             a_block[0] = ( Tension[0] + F_friction )/m_block;
         } 
     }
-    else { // block moving
+    else { // block moving, |v| > 10E-6
 
         denom = R*(m+m_block)/(m*m_block)
                 - sin(*theta)/m_block*(r_diff[1] - coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
@@ -174,6 +172,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         printf("\n");
     #endif
     }
+    //printf("theta=%f, *T=%f\n", *theta,*T);
 
     a_block[1] = 0;
 

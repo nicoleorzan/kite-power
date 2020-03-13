@@ -9,7 +9,6 @@
 
 //#define DEBUG
 
-#define h 0.00001                // Integration step
 #define coeff_friction 0.4       // Block friction coefficient
 #define m_block 10000.0          // Block mass
 

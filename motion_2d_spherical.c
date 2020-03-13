@@ -1,10 +1,9 @@
-#include "Dynamics/dynamics_2d_spherical.h"
+#include "Dynamics/dynamics_2d_spherical_cramer.h"
 //#include "Dynamics/winds.h"
 #include <time.h>
 #include <string.h>
 #include <stdbool.h>
 
-#define STEPS 1000000
 #define theta0 0.
 #define vtheta0 0.5
 
@@ -101,7 +100,7 @@ int main(int argc, char *argv[]){
         
         theta_star = atan((lift - m*g)/drag);
 
-        if (i%1000 == 0){
+        if (i%PRINTSTEP == 0){
             fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f     %f\n", \
                     t, rk[0], rk[1], r_block[0], r_block[1], W[0], W[1], v_block[0]);
         }
@@ -109,6 +108,11 @@ int main(int argc, char *argv[]){
         t += 1;
 
         F_vinc = m_block*g - T*sin(theta[0]);
+
+        if (m_block*g < T*sin(theta[0])){
+            //printf("m_block*g < T*sin(theta), exiting\n");
+            //break;
+        }
 
         if (F_vinc < 0) {
             decollato = 1;

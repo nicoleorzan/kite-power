@@ -9,7 +9,6 @@
 
 #define DEBUG
 
-#define h 0.0001
 // fisso alpha = 14, l'aereo guarda verso -x
 #define Cl 1.0
 #define Cd 0.13

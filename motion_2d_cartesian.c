@@ -4,7 +4,6 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define STEPS 1000000
 #define theta0 0.
 #define vtheta0 0.5
 
@@ -61,7 +60,6 @@ int main(int argc, char *argv[]){
 
     // kite motion vectors from fixed origin (x, z)
     double *rk = (double*) malloc(2 * sizeof(double)); 
-    double *rk1 = (double*) malloc(2 * sizeof(double));
     double *vk = (double*) malloc(2 * sizeof(double)); 
     double *ak = (double*) malloc(2 * sizeof(double)); 
 
@@ -96,10 +94,10 @@ int main(int argc, char *argv[]){
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, \
                             r_diff, v_diff, a_diff, &theta, alpha_index, W, &lift, &drag, &T, i);
         
-        /*if (m_block*g < T*cos(theta)){
-            printf("m_block*g < T*cos(theta), exiting\n");
+        if (m_block*g < T*sin(theta)){
+            printf("m_block*g < T*sin(theta), exiting\n");
             break;
-        }*/
+        }
 
         r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1]);
 
@@ -113,13 +111,12 @@ int main(int argc, char *argv[]){
 
         theta_star = atan((lift - m*g)/drag); // e` giusto calcolarlo ad ogni step??
 
-        if (i%1000 == 0){
+        // moving the kite to put it again at distance R with the block
 
-            rk1[0] = r_block[0] + (rk[0] - r_block[0])/fabs(r_diff_modulo)*R;
-            rk1[1] = r_block[1] + (rk[1] - r_block[1])/fabs(r_diff_modulo)*R;
+        rk[0] = r_block[0] + (rk[0] - r_block[0])/fabs(r_diff_modulo)*R;
+        rk[1] = r_block[1] + (rk[1] - r_block[1])/fabs(r_diff_modulo)*R;
 
-            rk[0] = rk1[0];
-            rk[1] = rk1[1];
+        if (i%PRINTSTEP == 0){
 
             fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f\n", \
                     t, rk[0], rk[1], r_block[0], r_block[1], theta, r_diff_modulo);
@@ -149,7 +146,6 @@ int main(int argc, char *argv[]){
     F_vinc, T, lift, drag, W[0], W[1]);
 
     free(rk);
-    free(rk1);
     free(vk);
     free(ak);
 
