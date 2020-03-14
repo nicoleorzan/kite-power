@@ -10,7 +10,6 @@
 //#define DEBUG
 
 #define coeff_friction 0.4      // Block friction coefficient
-#define V_THRESHOLD 10E-6
 
 double prova;
 double Va_mod;
@@ -59,8 +58,9 @@ void variables_initialization(double * rk, double * vk, double * ak,
 void integration_trajectory(double * rk, double * vk, double * ak, // Kite variables
                             double * r_block, double * v_block, double * a_block, // Block variables
                             double * theta, // Angle, velocity and acceleration values
-                            double * T, int alpha,
-                            double * W, double * lc, double * dc){
+                            int alpha,
+                            double * W, double * lc, double * dc,
+                            double * T, int it){
 
     va[0] = vk[0] - W[0];              // Apparent velocity on x
     va[1] = vk[1] - W[1];              // Apparent velocity on z
@@ -164,6 +164,8 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         F_friction = -coeff_friction*fabs(N)*cos(theta[0]);
 
     } // end if |Tx| < |F_friction|
+    
+    printf("i=%d, v < threshold = %f, T=%f\n", it, v_block[0], *T);
 
     } else {  // block moving, |v| > 10E-6
 
@@ -201,6 +203,8 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     N = m_block*g - Tension[1];
 
     F_friction = -coeff_friction*fabs(N)*v_block[0]/fabs(v_block[0]);
+
+    printf("i=%d, v > threshold = %f, T=%f\n", it, v_block[0], *T);
 
     }              
     //printf("theta=%f, *T=%f\n", theta[0],*T);

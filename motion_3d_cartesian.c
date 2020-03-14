@@ -4,11 +4,12 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define STEPS 1
-#define n_alphas 16
-#define theta0 PI/4
-#define vtheta0 0.
+#define theta0 PI/4.
+#define vtheta0 -0.5
+#define phi0 0.
+#define vphi0 0.
 #define dim 3
+#define mu 0.
 
 // ============== FILE INPUT: ATTACK ANGLE AND WIND COEFF AND IF TRAJECTORY IS NEEDED ============
 
@@ -22,6 +23,7 @@ int main(int argc, char *argv[]){
     }
 
     int alpha_index = atoi( *(argv + 1) );
+
     double W[3];
     W[0] = atof( *(argv + 2) );
     W[1] = atof( *(argv + 3) );
@@ -61,7 +63,6 @@ int main(int argc, char *argv[]){
 
     // kite motion vectors from fixed origin (x, z)
     double *rk = (double*) malloc(dim * sizeof(double)); 
-    double *rk1 = (double*) malloc(dim * sizeof(double)); 
     double *vk = (double*) malloc(dim * sizeof(double)); 
     double *ak = (double*) malloc(dim * sizeof(double)); 
 
@@ -75,19 +76,19 @@ int main(int argc, char *argv[]){
     double *v_diff = (double*) malloc(dim * sizeof(double));
     double *a_diff = (double*) malloc(dim * sizeof(double)); 
 
-    double theta = PI/4.;
-    double phi = 0;
-    double r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1] + r_diff[2]*r_diff[2]);
+    double theta = theta0;
+    double phi = phi0;
+    double r_diff_modulo;
 
     double lift=0, drag=0;
-    double mu = -0.0872665;
+    double T = 0;
     double F_vinc;
     double theta_star;
-    double T = 0;
     int stability = 0;
     int decollato = 0;
 
-    variables_initialization(rk, vk, ak, theta, phi, r_block, v_block, a_block);
+    variables_initialization(rk, vk, ak, theta, phi, vtheta0, vphi0, r_block, v_block, a_block);
+
     printf("init: %f       %f      %f      %f      %f      %f\n\n", rk[0], rk[1], rk[2], r_block[0], r_block[1], r_block[2]);
 
     int t = 0;   
@@ -96,8 +97,8 @@ int main(int argc, char *argv[]){
     
     for (int i=0; i<STEPS; i++){
 
-        integration_trajectory(rk, vk, ak, r_block, v_block, a_block, \
-                            r_diff, v_diff, a_diff, &theta, &phi, alpha_index, mu, W, &lift, &drag, &T, i);
+        integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
+                            &theta, &phi, alpha_index, mu, W, &lift, &drag, &T, i);
 
         if (m_block*g < T*cos(theta)){
             printf("m_block*g < T*cos(theta), exiting\n");
@@ -113,21 +114,14 @@ int main(int argc, char *argv[]){
             break;
         }
 
-        if (i%1000 == 0){
+        // moving the kite to put it again at distance R with the block
 
-            rk1[0] = r_block[0] + (rk[0] - r_block[0])/fabs(r_diff_modulo)*R;
-            rk1[1] = r_block[1] + (rk[1] - r_block[1])/fabs(r_diff_modulo)*R;
-            rk1[2] = r_block[2] + (rk[2] - r_block[2])/fabs(r_diff_modulo)*R;
+        rk[0] = r_block[0] + (rk[0] - r_block[0])/fabs(r_diff_modulo)*R;
+        rk[1] = r_block[1] + (rk[1] - r_block[1])/fabs(r_diff_modulo)*R;
+        rk[2] = r_block[2] + (rk[2] - r_block[2])/fabs(r_diff_modulo)*R;
 
-            /*printf("(rk[0] - r_block[0])/fabs(r_diff_modulo)*R=%f\n", (rk[0] - r_block[0])/fabs(r_diff_modulo)*R);
-            printf("(rk[1] - r_block[1])/fabs(r_diff_modulo)*R=%f\n", (rk[1] - r_block[1])/fabs(r_diff_modulo)*R);
-            printf("(rk[2] - r_block[2])/fabs(r_diff_modulo)*R=%f\n", (rk[2] - r_block[2])/fabs(r_diff_modulo)*R);*/
+        if (i%PRINTSTEP == 0){
 
-            rk[0] = rk1[0];
-            rk[1] = rk1[1];
-            rk[2] = rk1[2];
-
-            //printf("%f       %f      %f      %f      %f      %f\n", rk[0], rk[1], 0., r_block[0], r_block[1], r_block[2]);
             fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f      %f      %f      %f\n", \
                     t, rk[0], rk[1], rk[2], r_block[0], r_block[1], r_block[2], theta, phi, r_diff_modulo);
         }
@@ -158,7 +152,6 @@ int main(int argc, char *argv[]){
     }
 
     free(rk);
-    free(rk1);
     free(vk);
     free(ak);
 

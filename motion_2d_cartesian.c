@@ -6,6 +6,7 @@
 
 #define theta0 0.
 #define vtheta0 0.5
+#define dim 2
 
 // ============== FILE INPUT: ATTACK ANGLE AND WIND COEFF AND IF TRAJECTORY IS NEEDED ============
 
@@ -59,18 +60,18 @@ int main(int argc, char *argv[]){
     // ============================ VARIABLES DEFINITION ============================
 
     // kite motion vectors from fixed origin (x, z)
-    double *rk = (double*) malloc(2 * sizeof(double)); 
-    double *vk = (double*) malloc(2 * sizeof(double)); 
-    double *ak = (double*) malloc(2 * sizeof(double)); 
+    double *rk = (double*) malloc(dim * sizeof(double)); 
+    double *vk = (double*) malloc(dim * sizeof(double)); 
+    double *ak = (double*) malloc(dim * sizeof(double)); 
 
     // block motion vectors from fixed origin  (x, z)
-    double *r_block = (double*) malloc(2 * sizeof(double)); 
-    double *v_block = (double*) malloc(2 * sizeof(double));
-    double *a_block = (double*) malloc(2 * sizeof(double));  
+    double *r_block = (double*) malloc(dim * sizeof(double)); 
+    double *v_block = (double*) malloc(dim * sizeof(double));
+    double *a_block = (double*) malloc(dim * sizeof(double));  
 
-    double *r_diff = (double*) malloc(2 * sizeof(double)); 
-    double *v_diff = (double*) malloc(2 * sizeof(double)); 
-    double *a_diff = (double*) malloc(2 * sizeof(double)); 
+    double *r_diff = (double*) malloc(dim * sizeof(double)); 
+    double *v_diff = (double*) malloc(dim * sizeof(double)); 
+    double *a_diff = (double*) malloc(dim * sizeof(double)); 
 
     double theta = theta0;
 
@@ -91,8 +92,8 @@ int main(int argc, char *argv[]){
     
     for (int i=0; i<STEPS; i++){
 
-        integration_trajectory(rk, vk, ak, r_block, v_block, a_block, \
-                            r_diff, v_diff, a_diff, &theta, alpha_index, W, &lift, &drag, &T, i);
+        integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
+                            &theta, alpha_index, W, &lift, &drag, &T, i);
         
         if (m_block*g < T*sin(theta)){
             printf("m_block*g < T*sin(theta), exiting\n");
@@ -108,7 +109,6 @@ int main(int argc, char *argv[]){
             break;
         }
 
-
         theta_star = atan((lift - m*g)/drag); // e` giusto calcolarlo ad ogni step??
 
         // moving the kite to put it again at distance R with the block
@@ -117,14 +117,13 @@ int main(int argc, char *argv[]){
         rk[1] = r_block[1] + (rk[1] - r_block[1])/fabs(r_diff_modulo)*R;
 
         if (i%PRINTSTEP == 0){
-
             fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f\n", \
                     t, rk[0], rk[1], r_block[0], r_block[1], theta, r_diff_modulo);
         }
 
-        t += 1;
-
         F_vinc = m_block*g - T*sin(theta);
+
+        t += 1;
 
         if (F_vinc < 0) {
             decollato = 1;

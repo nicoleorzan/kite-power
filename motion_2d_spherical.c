@@ -6,6 +6,7 @@
 
 #define theta0 0.
 #define vtheta0 0.5
+#define dim 2
 
 // ============== FILE INPUT: ATTACK ANGLE AND WIND COEFF AND IF TRAJECTORY IS NEEDED ============
 
@@ -59,14 +60,14 @@ int main(int argc, char *argv[]){
     // ============================ VARIABLES DEFINITION ============================
 
     // kite motion vectors from fixed origin (x, z)
-    double *rk = (double*) malloc(2 * sizeof(double)); 
-    double *vk = (double*) malloc(2 * sizeof(double)); 
-    double *ak = (double*) malloc(2 * sizeof(double)); 
+    double *rk = (double*) malloc(dim * sizeof(double)); 
+    double *vk = (double*) malloc(dim * sizeof(double)); 
+    double *ak = (double*) malloc(dim * sizeof(double)); 
 
     // block motion vectors from fixed origin  (x, z)
-    double *r_block = (double*) malloc(2 * sizeof(double)); 
-    double *v_block = (double*) malloc(2 * sizeof(double));
-    double *a_block = (double*) malloc(2 * sizeof(double));  
+    double *r_block = (double*) malloc(dim * sizeof(double)); 
+    double *v_block = (double*) malloc(dim * sizeof(double));
+    double *a_block = (double*) malloc(dim * sizeof(double));  
 
     // theta, dtheta, ddtheta of kite from block sdr
     double *theta = (double*) malloc(3 * sizeof(double)); 
@@ -86,10 +87,13 @@ int main(int argc, char *argv[]){
     
     for (int i=0; i<STEPS; i++){
 
-        //streamfunction(rk, &W[0], &W[1]);
+        integration_trajectory(rk, vk, ak, r_block, v_block, a_block, theta, alpha_index, \
+                             W, &lift, &drag, &T, i);
 
-        integration_trajectory(rk, vk, ak, r_block, v_block, a_block, theta, &T, alpha_index, \
-                             W, &lift, &drag);
+        if (m_block*g < T*sin(theta[0])){
+            printf("m_block*g < T*sin(theta), exiting\n");
+            break;
+        }
         
         if (rk[1] <= 0.) {
             printf("Kite Fall, steps %d, z<0, break\n", i);
@@ -105,14 +109,9 @@ int main(int argc, char *argv[]){
                     t, rk[0], rk[1], r_block[0], r_block[1], W[0], W[1], v_block[0]);
         }
 
-        t += 1;
-
         F_vinc = m_block*g - T*sin(theta[0]);
 
-        if (m_block*g < T*sin(theta[0])){
-            //printf("m_block*g < T*sin(theta), exiting\n");
-            //break;
-        }
+        t += 1;
 
         if (F_vinc < 0) {
             decollato = 1;
