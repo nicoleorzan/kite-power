@@ -1,4 +1,4 @@
-#include "Dynamics/dynamics_2d_cartesian.h"
+#include "Dynamics/dynamics_2d_cartesian_tension.h"
 //#include "Dynamics/winds.h"
 #include <time.h>
 #include <string.h>
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
     FILE *trajectory, *wind;
     trajectory = fopen("out.txt", "w+"); // fopen(filename_trajectory, "w+");
 
-    fprintf(trajectory, "t       x_kite       z_kite      x_block      z_block      theta      r_diff\n");
+    fprintf(trajectory, "t       x_kite       z_kite      x_block      z_block      theta      r_diff      T\n");
 
     // ============================ VARIABLES DEFINITION ============================
 
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]){
     int stability = 0;
     int decollato = 0;
 
-    variables_initialization(rk, vk, ak, theta0, vtheta0, r_block, v_block, a_block);
+    variables_initialization(rk, vk, ak, theta0, vtheta0, r_block, v_block, a_block, r_diff, v_diff, a_diff);
 
     int t = 0;   
 
@@ -94,34 +94,30 @@ int main(int argc, char *argv[]){
 
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
                             &theta, alpha_index, W, &lift, &drag, &T, i);
-        
-        if (m_block*g < T*sin(theta)){
+        printf("T=%f\n", T);
+
+        /*if (m_block*g < T*sin(theta)){
             printf("m_block*g < T*sin(theta), exiting\n");
             break;
-        }
+        }*/
 
         r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1]);
-
-        if (rk[1] <= 0.) {
-            printf("Kite Fall, steps %d, z<0, break\n", i);
-            fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f\n", \
-                    t, rk[0], 0., r_block[0], r_block[1], theta, r_diff_modulo);
-            break;
-        }
-
         theta_star = atan((lift - m*g)/drag); // e` giusto calcolarlo ad ogni step??
+        F_vinc = m_block*g - T*sin(theta);
 
         // moving the kite to put it again at distance R with the block
 
         rk[0] = r_block[0] + (rk[0] - r_block[0])/fabs(r_diff_modulo)*R;
         rk[1] = r_block[1] + (rk[1] - r_block[1])/fabs(r_diff_modulo)*R;
 
-        if (i%PRINTSTEP == 0){
-            fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f\n", \
-                    t, rk[0], rk[1], r_block[0], r_block[1], theta, r_diff_modulo);
+        if (i%PRINTSTEP == 0 || rk[1] <= 0.){
+            fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f      %f\n", \
+                    t, rk[0], rk[1], r_block[0], r_block[1], theta, r_diff_modulo, T);
+            if (rk[1] <=0. ){
+                printf("Kite Fall, steps %d, z<0, break\n", i);
+                break;
+            }
         }
-
-        F_vinc = m_block*g - T*sin(theta);
 
         t += 1;
 
@@ -131,7 +127,7 @@ int main(int argc, char *argv[]){
 
     }
 
-    stability = 0; // 0 = stability not reached
+    //stability = 0; // 0 = stability not reached
 
     /*if (theta[0] != 0. && abs(theta[0] == theta_star) < 10E-5 && theta[1] < 10E-5){
         stability = 1;

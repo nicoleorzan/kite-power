@@ -1,4 +1,4 @@
-#include "Dynamics/dynamics_2d_spherical_cramer.h"
+#include "Dynamics/dynamics_2d_spherical_cramer_tension.h"
 //#include "Dynamics/winds.h"
 #include <time.h>
 #include <string.h>
@@ -89,11 +89,12 @@ int main(int argc, char *argv[]){
 
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, theta, alpha_index, \
                              W, &lift, &drag, &T, i);
+        printf("T=%f\n", T);
 
-        if (m_block*g < T*sin(theta[0])){
+        /*if (m_block*g < T*sin(theta[0])){
             printf("m_block*g < T*sin(theta), exiting\n");
-            break;
-        }
+            //break;
+        }*/
         
         if (rk[1] <= 0.) {
             printf("Kite Fall, steps %d, z<0, break\n", i);
