@@ -63,7 +63,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
                             double * theta,
                             int alpha,
                             double * W, double * lc, double * dc,
-                            double * T, int it, int sector){
+                            double * T, int it, int * sector){
 
     r_diff[0] = rk[0] - r_block[0];
     r_diff[1] = rk[1] - r_block[1];
@@ -109,11 +109,13 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     // Compute tension
 
-    // CASE 1) Block not moving (|v| < 10E-6)
+    // ===================== CASE 1) BLOCK NOT MOVING ( |v-block| < 10E-6 ) ==================
 
     if ( fabs(v_block[0]) < V_THRESHOLD ){ 
 
         // hypothesis: |Mg| > |Tz|
+
+        *sector = 1;
 
         denom = R*(m+m_block)/(m*m_block)
                 - sin(*theta)/m_block*(r_diff[1] - coeff_friction*cos(*theta)*r_diff[0]);
@@ -130,6 +132,8 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         // If hypothesis not satisfied ( |Mg| < |Tz| ) we need to recompute tension
 
         if ( m_block*g < Tension[1] ){
+
+            *sector = 2;
 
             denom = R*(m+m_block)/(m*m_block)
                     - sin(*theta)/m_block*(r_diff[1] + coeff_friction*cos(*theta)*r_diff[0]);
@@ -151,13 +155,15 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
         // If the computed tension is bigger than friction force, block moves
 
-        if ( fabs(Tension[0]) > fabs(F_friction) ){ 
+        if ( fabs(Tension[0]) >= fabs(F_friction) ){ 
             a_block[0] = ( Tension[0] + F_friction )/m_block;
         }
 
         // If not, recompute friction as: F_friction = -Tension[0]; which gives a_block[0] = 0
 
         else { 
+
+            *sector = 3;
             
             denom = R*(m+m_block)/(m*m_block) 
             - sin(*theta)*r_diff[1]/m_block - cos(*theta)*r_diff[0]/m_block;
@@ -175,11 +181,13 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     }
 
-    // CASE 2) Block moving (|v| >= 10E-6) ===> Fmu = -mu*|N|*vx/|vx|
+     // ========================== CASE 2) BLOCK MOVING (|v| >= 10E-6) ===> Fmu = -mu*|N|*vx/|vx| =====================
 
     else {
 
         // hypothesis: |Mg| > |Tz|
+
+        *sector = 4;
 
         denom = R*(m+m_block)/(m*m_block)
                 - sin(*theta)/m_block*(r_diff[1] - coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
@@ -197,15 +205,11 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         Tension[0] = *T*cos(*theta);
         Tension[1] = *T*sin(*theta);
 
-       // printf("beta %f, pi/2=%f  ",beta, PI/2.);
-        //printf("  T[0]=%f, T[1]=%f,  ", Tension[0], Tension[1]);
-
         // If hypothesis not satisfied ( |Mg| < |Tz| ) need to recompute tension
     
         if (m_block*g < Tension[1]) {
-            
-            //printf("Tx = %f, Ty = %f\n", Tension[0], Tension[1]);
-            //printf("N=%f\n", N);
+
+            *sector = 5;
         
             denom = R*(m+m_block)/(m*m_block)
                     - sin(*theta)/m_block*(r_diff[1] + coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));

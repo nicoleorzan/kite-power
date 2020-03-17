@@ -74,6 +74,7 @@ int main(int argc, char *argv[]){
      
     double lift=0, drag=0;
     double T = 0;
+    int sector = 0;
     double F_vinc;
     double theta_star;
     int stability = 0;
@@ -88,8 +89,8 @@ int main(int argc, char *argv[]){
     for (int i=0; i<STEPS; i++){
 
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, theta, alpha_index, \
-                             W, &lift, &drag, &T, i);
-        printf("T=%f\n", T);
+                             W, &lift, &drag, &T, i, &sector);
+        printf("T=%f, sector=%d\n", T, sector);
 
         /*if (m_block*g < T*sin(theta[0])){
             printf("m_block*g < T*sin(theta), exiting\n");

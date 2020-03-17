@@ -61,7 +61,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
                             double * theta, // Angle, velocity and acceleration values
                             int alpha,
                             double * W, double * lc, double * dc,
-                            double * T, int it){
+                            double * T, int it, int * sector){
 
     va[0] = vk[0] - W[0];              // Apparent velocity on x
     va[1] = vk[1] - W[1];              // Apparent velocity on z
@@ -91,12 +91,13 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     D[0] = *dc*cos(beta + PI);
     D[1] = *dc*sin(beta + PI);
 
-
     // ===================== CASE 1) BLOCK NOT MOVING ( |v-block| < 10E-6 ) ==================
 
     if ( fabs(v_block[0]) < V_THRESHOLD ){
 
         // Hypothesis: |Mg| > |Tz|
+
+        *sector = 1;
 
         csi = -( cos(theta[0]) + coeff_friction*sin(theta[0])*cos(theta[0]) );
 
@@ -170,6 +171,8 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     // ============> If not, recompute friction as: F_friction = -Tension[0]; which gives a_block[0] = 0
 
     if ( fabs(Tension[0]) < fabs(F_friction) ){
+
+        *sector = 3;
     
         csi = 0;
 
@@ -212,6 +215,8 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
         // Hypothesis: |Mg| > |Tz|
 
+        *sector = 4;
+
         csi = -( cos(theta[0]) + coeff_friction*sin(theta[0])*v_block[0]/fabs(v_block[0]) );
 
         detA = m*(m*R*cos(theta[0])*csi) 
@@ -244,6 +249,8 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         // If hypothesis not satisfied ( Mg < Tz ) we need to recompute tension
 
         if ( m_block*g < Tension[1] ){
+
+            *sector = 5;
 
             csi = - cos(theta[0]) + coeff_friction*sin(theta[0])*v_block[0]/fabs(v_block[0]);
 
