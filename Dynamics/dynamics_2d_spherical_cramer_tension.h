@@ -99,7 +99,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
         *sector = 1;
 
-        csi = -( cos(theta[0]) + coeff_friction*sin(theta[0])*cos(theta[0]) );
+        csi = - cos(theta[0]) - coeff_friction*sin(theta[0])*cos(theta[0]);
 
         detA = m*(m*R*cos(theta[0])*csi) 
             - m*R*sin(theta[0])*m_block*sin(theta[0]) 
@@ -132,7 +132,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
         if ( m_block*g < Tension[1] ){
 
-            csi = -( cos(theta[0]) - coeff_friction*sin(theta[0])*cos(theta[0]) );
+            csi = - cos(theta[0]) + coeff_friction*sin(theta[0])*cos(theta[0]);
 
             detA = m*(m*R*cos(theta[0])*csi) 
                 - m*R*sin(theta[0])*m_block*sin(theta[0]) 
@@ -205,7 +205,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
         N = m_block*g - Tension[1];
 
-        F_friction = -coeff_friction*fabs(N)*cos(theta[0]);
+        F_friction = -Tension[0];
 
     }
 
@@ -217,7 +217,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
         *sector = 4;
 
-        csi = -( cos(theta[0]) + coeff_friction*sin(theta[0])*v_block[0]/fabs(v_block[0]) );
+        csi = - cos(theta[0]) - coeff_friction*sin(theta[0])*v_block[0]/fabs(v_block[0]);
 
         detA = m*(m*R*cos(theta[0])*csi) 
             - m*R*sin(theta[0])*m_block*sin(theta[0]) 
