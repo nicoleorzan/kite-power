@@ -301,7 +301,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         *F_attr = F_friction;
     }              
 
-    printf("\ni=%d, beta=%f, Lx = %f\n", it, beta, L[0]);
+    //printf("\ni=%d, beta=%f, Lx = %f\n", it, beta, L[0]);
     //printf("T[0] = %f, T[1] = %f\n", Tension[0], Tension[1]);
 
     a_block[1] = 0;

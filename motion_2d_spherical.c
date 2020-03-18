@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
     FILE *trajectory, *wind;
     trajectory = fopen("out.txt", "w+"); // fopen(filename_trajectory, "w+");
 
-    fprintf(trajectory, "t         x_kite          z_kite         x_block         z_block       wind_x      wind_y      v_block\n");
+    fprintf(trajectory, "t       x_kite        z_kite        x_block         z_block       wind_x      wind_y      v_block      Tension\n");
 
     // ============================ VARIABLES DEFINITION ============================
 
@@ -91,30 +91,29 @@ int main(int argc, char *argv[]){
 
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, theta, alpha_index, \
                              W, &lift, &drag, &T, &F_attr, i, &sector);
-        printf("T=%f, Fattr=%f, sector=%d\n", T, F_attr, sector);
-        /*if ( ( F_attr/fabs(F_attr) != - T/fabs(T) ) && (sector !=4 && sector !=5) ){
-            printf("error!\n");
-            break;
-        }*/
-
+        //printf("T=%f, Fattr=%f, sector=%d\n", T, F_attr, sector);
 
         /*if (m_block*g < T*sin(theta[0])){
             printf("m_block*g < T*sin(theta), exiting\n");
             //break;
         }*/
         
-        if (rk[1] <= 0.) {
+        /*if (rk[1] <= 0.) {
             printf("Kite Fall, steps %d, z<0, break\n", i);
-            fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f     %f\n", \
-                    t, rk[0], 0., r_block[0], r_block[1], W[0], W[1], v_block[0]);
+            fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f     %f     %f\n", \
+                    t, rk[0], 0., r_block[0], r_block[1], W[0], W[1], v_block[0], T);
             break;
-        }
+        }*/
         
         theta_star = atan((lift - m*g)/drag);
 
-        if (i%PRINTSTEP == 0){
-            fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f     %f\n", \
-                    t, rk[0], rk[1], r_block[0], r_block[1], W[0], W[1], v_block[0]);
+        if (i%PRINTSTEP == 0  || rk[1] <= 0.){
+            fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f     %f     %f\n", \
+                    t, rk[0], rk[1], r_block[0], r_block[1], W[0], W[1], v_block[0], T);
+            if (rk[1] <=0. ){
+                printf("Kite Fall, steps %d, z<0, break\n", i);
+                break;
+            }
         }
 
         F_vinc = m_block*g - T*sin(theta[0]);

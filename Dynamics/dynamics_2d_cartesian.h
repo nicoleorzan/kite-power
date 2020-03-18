@@ -171,6 +171,8 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
             *T = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m 
                 + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) - g*r_diff[1];
 
+            *T = *T/denom;
+
             Tension[0] = *T*cos(*theta);
             Tension[1] = *T*sin(*theta);
 
@@ -228,7 +230,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     }
 
-    printf("\ni=%d, beta=%f, Lx = %f\n", it, beta, L[0]);
+    //printf("\ni=%d, beta=%f, Lx = %f\n", it, beta, L[0]);
     //printf("T[0] = %f, T[1] = %f\n", Tension[0], Tension[1]);
 
     a_block[1] = 0;

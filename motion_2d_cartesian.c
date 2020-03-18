@@ -96,11 +96,7 @@ int main(int argc, char *argv[]){
 
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
                             &theta, alpha_index, W, &lift, &drag, &T, &F_attr, i, &sector);
-        printf("T=%f, Fattr=%f, sector=%d\n", T, F_attr, sector);
-        /* if ( ( F_attr/fabs(F_attr) != - T/fabs(T) ) && (sector !=4 && sector !=5) ){
-            printf("error!\n");
-            break;
-        }*/
+        //printf("T=%f, Fattr=%f, sector=%d\n", T, F_attr, sector);
 
         /*if (m_block*g < T*sin(theta)){
             printf("m_block*g < T*sin(theta), exiting\n");
