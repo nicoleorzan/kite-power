@@ -65,7 +65,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
                             double * theta,
                             int alpha,
                             double * W, double * lc, double * dc,
-                            double * T, int it, int * sector){
+                            double * T, double *F_attr, int it, int * sector){
 
     r_diff[0] = rk[0] - r_block[0];
     r_diff[1] = rk[1] - r_block[1];
@@ -117,31 +117,31 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
         // |Mg| > |Tz|
 
-        *sector = 1;
-
         denom1 = R*(m+m_block)/(m*m_block)
-                - sin(*theta)/m_block*(r_diff[1] - coeff_friction*cos(*theta)*r_diff[0]);
+                - sin(*theta)/m_block*(r_diff[1] - coeff_friction*cos(*theta)/fabs(cos(*theta))*r_diff[0]);
 
         T1 = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
             + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
-            - g*(r_diff[1] - coeff_friction*cos(*theta)*r_diff[0]);
+            - g*(r_diff[1] - coeff_friction*cos(*theta)/fabs(cos(*theta))*r_diff[0]);
 
         T1 = T1/denom1;
 
         // |Mg| < |Tz|
 
         denom2 = R*(m+m_block)/(m*m_block)
-                    - sin(*theta)/m_block*(r_diff[1] + coeff_friction*cos(*theta)*r_diff[0]);
+                    - sin(*theta)/m_block*(r_diff[1] + coeff_friction*cos(*theta)/fabs(cos(*theta))*r_diff[0]);
 
         T2 = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
             + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
-            - g*(r_diff[1] + coeff_friction*cos(*theta)*r_diff[0]);
+            - g*(r_diff[1] + coeff_friction*cos(*theta)/fabs(cos(*theta))*r_diff[0]);
 
         T2 = T2/denom2;
 
         if ( m_block*g > T1*sin(*theta) ){
+            *sector = 1;
             *T = T1;
         } else if ( m_block*g <= T2*sin(*theta) ){
+            *sector = 2;
             *T = T2;
         } else { 
             printf("ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"); 
@@ -153,18 +153,15 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         N = m_block*g - Tension[1];
 
         F_friction = -coeff_friction*fabs(N)*cos(*theta);
+        *F_attr = F_friction;
 
-        // If the computed tension is bigger than friction force, block moves
+        a_block[0] = ( Tension[0] + F_friction )/m_block;
 
-        /*if ( fabs(Tension[0]) >= fabs(F_friction) ){ 
-            a_block[0] = ( Tension[0] + F_friction )/m_block;
-        }*/
+        // ============> If the computed tension is bigger than friction force, block moves (so we have to do nothing).
+
+        // ============> If not, recompute friction as: F_friction = -Tension[0]; which gives a_block[0] = 0
 
         if ( fabs(Tension[0]) < fabs(F_friction) ){
-
-        // If not, recompute friction as: F_friction = -Tension[0]; which gives a_block[0] = 0
-
-        //else { 
 
             *sector = 3;
             
@@ -178,12 +175,11 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
             Tension[1] = *T*sin(*theta);
 
             F_friction = -Tension[0];
-            
-            //a_block[0] = ( Tension[0] + F_friction )/m_block; // is zero
+            *F_attr = F_friction;
+
+            a_block[0] = ( Tension[0] + F_friction )/m_block;
         }
         
-        a_block[0] = ( Tension[0] + F_friction )/m_block; // is zero
-
     }
 
      // ========================== CASE 2) BLOCK MOVING (|v| >= 10E-6) ===> Fmu = -mu*|N|*vx/|vx| =====================
@@ -191,8 +187,6 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     else {
 
         // |Mg| > |Tz|
-
-        *sector = 4;
 
         denom1 = R*(m+m_block)/(m*m_block)
                 - sin(*theta)/m_block*(r_diff[1] - coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
@@ -213,8 +207,10 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         T2 = T2/denom2;
 
         if ( m_block*g > T1*sin(*theta) ) {
+            *sector = 4;
             *T = T1;
         } else if ( m_block*g <= T2*sin(*theta) ){
+            *sector = 5;
             *T = T2;
         } else {
             printf("ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"); 
@@ -226,14 +222,19 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         N = m_block*g - Tension[1];
 
         F_friction = -coeff_friction*fabs(N)*v_block[0]/fabs(v_block[0]);
+        *F_attr = F_friction;
 
         a_block[0] = ( Tension[0] + F_friction )/m_block;
 
     }
 
+    printf("\ni=%d, beta=%f, Lx = %f\n", it, beta, L[0]);
+    //printf("T[0] = %f, T[1] = %f\n", Tension[0], Tension[1]);
+
+    a_block[1] = 0;
 
     v_block[0] = v_block[0] + h*a_block[0]; 
-    v_block[1] = 0;
+    v_block[1] = v_block[1] + h*a_block[1];
 
     r_block[0] = r_block[0] + h*v_block[0]; 
     r_block[1] = r_block[1] + h*v_block[1];

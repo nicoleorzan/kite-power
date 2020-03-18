@@ -76,6 +76,7 @@ int main(int argc, char *argv[]){
     double T = 0;
     int sector = 0;
     double F_vinc;
+    double F_attr;
     double theta_star;
     int stability = 0;
     int decollato = 0;
@@ -89,8 +90,13 @@ int main(int argc, char *argv[]){
     for (int i=0; i<STEPS; i++){
 
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, theta, alpha_index, \
-                             W, &lift, &drag, &T, i, &sector);
-        printf("T=%f, sector=%d, L=%f, D=%f\n", T, sector, lift, drag);
+                             W, &lift, &drag, &T, &F_attr, i, &sector);
+        printf("T=%f, Fattr=%f, sector=%d\n", T, F_attr, sector);
+        /*if ( ( F_attr/fabs(F_attr) != - T/fabs(T) ) && (sector !=4 && sector !=5) ){
+            printf("error!\n");
+            break;
+        }*/
+
 
         /*if (m_block*g < T*sin(theta[0])){
             printf("m_block*g < T*sin(theta), exiting\n");
