@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
     FILE *trajectory, *wind;
     trajectory = fopen("outc.txt", "w+"); // fopen(filename_trajectory, "w+");
 
-    fprintf(trajectory, "t       x_kite       z_kite      x_block      z_block      theta      r_diff      T\n");
+    fprintf(trajectory, "t      x_kite      z_kite      x_block      z_block      v_block    Tension\n");
 
     // ============================ VARIABLES DEFINITION ============================
 
@@ -85,6 +85,7 @@ int main(int argc, char *argv[]){
     double theta_star;
     int stability = 0;
     int decollato = 0;
+    double dtheta;
 
     variables_initialization(rk, vk, ak, theta0, vtheta0, r_block, v_block, a_block, r_diff, v_diff, a_diff);
 
@@ -98,11 +99,6 @@ int main(int argc, char *argv[]){
                             &theta, alpha_index, W, &lift, &drag, &T, &F_attr, i, &sector);
         //printf("T=%f, Fattr=%f, sector=%d\n", T, F_attr, sector);
 
-        /*if (m_block*g < T*sin(theta)){
-            printf("m_block*g < T*sin(theta), exiting\n");
-            break;
-        }*/
-
         r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1]);
         theta_star = atan((lift - m*g)/drag); // e` giusto calcolarlo ad ogni step??
         F_vinc = m_block*g - T*sin(theta);
@@ -113,8 +109,8 @@ int main(int argc, char *argv[]){
         rk[1] = r_block[1] + (rk[1] - r_block[1])/fabs(r_diff_modulo)*R;
 
         if (i%PRINTSTEP == 0 || rk[1] <= 0.){
-            fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f      %f\n", \
-                    t, rk[0], rk[1], r_block[0], r_block[1], theta, r_diff_modulo, T);
+            fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f\n", \
+                    t, rk[0], rk[1], r_block[0], r_block[1], v_block[0], T);
             if (rk[1] <=0. ){
                 printf("Kite Fall, steps %d, z<0, break\n", i);
                 break;
@@ -129,18 +125,27 @@ int main(int argc, char *argv[]){
 
     }
 
-    //stability = 0; // 0 = stability not reached
+    if (rk[1] <= 0){
+        rk[1] = 0;
+        v_block[0] = 0;
+    }
 
-    /*if (theta[0] != 0. && abs(theta[0] == theta_star) < 10E-5 && theta[1] < 10E-5){
+    theta_star = atan((lift - m*g)/drag);
+
+    dtheta = 1/(1+r_diff[1]/r_diff[0])*(v_diff[1]*r_diff[0] - r_diff[1]*v_diff[0])/(r_diff[0]*r_diff[0]);
+
+    stability = 0; // 0 = stability not reached
+
+    if (theta != 0. && abs(theta == theta_star) < 10E-5 && dtheta < 10E-5){
         stability = 1;
-    }*/
+    }
 
-    printf("iter, alpha, theta0, Theta_fin, v_block_fin_x, F_vinc, ");
-    printf("Tension, Lift, Drag, Wind_x, Wind_y\n");
+    printf("iter, alpha, theta0, theta_fin, v_theta_fin, v_block_fin_x, Wind_x, Wind_y, ");
+    printf("F_vinc, Tension, Lift, Drag, Stability\n");
     
-    printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n", \
-    t, alphas[alpha_index], theta0, theta, v_block[0], \
-    F_vinc, T, lift, drag, W[0], W[1]);
+    printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %d\n", \
+    t, alphas[alpha_index], theta0, theta, dtheta, v_block[0], W[0], W[1], \
+    F_vinc, T, lift, drag, stability);
 
     free(rk);
     free(vk);
