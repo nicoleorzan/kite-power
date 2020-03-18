@@ -1,4 +1,4 @@
-#include "Dynamics/dynamics_2d_cartesian_tension.h"
+#include "Dynamics/dynamics_2d_cartesian.h"
 //#include "Dynamics/winds.h"
 #include <time.h>
 #include <string.h>
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
     }
 
     FILE *trajectory, *wind;
-    trajectory = fopen("out.txt", "w+"); // fopen(filename_trajectory, "w+");
+    trajectory = fopen("outc.txt", "w+"); // fopen(filename_trajectory, "w+");
 
     fprintf(trajectory, "t       x_kite       z_kite      x_block      z_block      theta      r_diff      T\n");
 
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]){
 
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
                             &theta, alpha_index, W, &lift, &drag, &T, i, &sector);
-        printf("T=%f, sector=%d\n", T, sector);
+        printf("T=%f, sector=%d, L=%f, D=%f\n", T, sector, lift, drag);
 
         /*if (m_block*g < T*sin(theta)){
             printf("m_block*g < T*sin(theta), exiting\n");

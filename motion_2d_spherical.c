@@ -1,4 +1,4 @@
-#include "Dynamics/dynamics_2d_spherical_cramer_tension.h"
+#include "Dynamics/dynamics_2d_spherical_cramer.h"
 //#include "Dynamics/winds.h"
 #include <time.h>
 #include <string.h>
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]){
 
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, theta, alpha_index, \
                              W, &lift, &drag, &T, i, &sector);
-        printf("T=%f, sector=%d\n", T, sector);
+        printf("T=%f, sector=%d, L=%f, D=%f\n", T, sector, lift, drag);
 
         /*if (m_block*g < T*sin(theta[0])){
             printf("m_block*g < T*sin(theta), exiting\n");

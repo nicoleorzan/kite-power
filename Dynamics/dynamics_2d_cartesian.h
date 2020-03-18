@@ -19,14 +19,18 @@ double beta;
 double Fg[2] = {0, -m*g};
 double F_friction;
 double N;
+double T1, denom1;
+double T2, denom2;
 double Tension[2], denom;
 double Ftot[2]; 
+double num;
 
 double F_aer[2];
 
-void variables_initialization(double * rk, double * vk, double * ak,
+void variables_initialization(double *rk, double *vk, double *ak,
                              double theta, double dtheta,
-                             double * r_block, double * v_block, double * a_block){
+                             double *r_block, double *v_block, double *a_block,
+                             double *r_diff, double *v_diff, double *a_diff){
     r_block[0] = 0;
     r_block[1] = 0;
 
@@ -44,6 +48,15 @@ void variables_initialization(double * rk, double * vk, double * ak,
 
     ak[0] = -R*dtheta*dtheta*cos(theta);
     ak[1] = -R*dtheta*dtheta*sin(theta);
+
+    r_diff[0] = rk[0] - r_block[0];
+    r_diff[1] = rk[1] - r_block[1];
+
+    v_diff[0] = vk[0] - v_block[0];
+    v_diff[1] = vk[1] - v_block[1];
+
+    a_diff[0] = ak[0] - a_block[0];
+    a_diff[1] = ak[1] - a_block[1];
 }
 
 void integration_trajectory(double * rk, double * vk, double * ak, // Kite variables
@@ -52,7 +65,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
                             double * theta,
                             int alpha,
                             double * W, double * lc, double * dc,
-                            double * T, int it){
+                            double * T, int it, int * sector){
 
     r_diff[0] = rk[0] - r_block[0];
     r_diff[1] = rk[1] - r_block[1];
@@ -96,38 +109,64 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     F_aer[0] = L[0] + D[0];
     F_aer[1] = L[1] + D[1];
 
-    // Computing block motion
+    // Compute tension
 
-    if ( fabs(v_block[0]) < V_THRESHOLD ){ // block not moving
-        
-        denom = R*(m+m_block)/(m*m_block)
+    // ===================== CASE 1) BLOCK NOT MOVING ( |v-block| < 10E-6 ) ==================
+
+    if ( fabs(v_block[0]) < V_THRESHOLD ){ 
+
+        // |Mg| > |Tz|
+
+        *sector = 1;
+
+        denom1 = R*(m+m_block)/(m*m_block)
                 - sin(*theta)/m_block*(r_diff[1] - coeff_friction*cos(*theta)*r_diff[0]);
 
-        *T = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
+        T1 = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
             + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
             - g*(r_diff[1] - coeff_friction*cos(*theta)*r_diff[0]);
 
-        *T = *T/denom;
+        T1 = T1/denom1;
+
+        // |Mg| < |Tz|
+
+        denom2 = R*(m+m_block)/(m*m_block)
+                    - sin(*theta)/m_block*(r_diff[1] + coeff_friction*cos(*theta)*r_diff[0]);
+
+        T2 = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
+            + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
+            - g*(r_diff[1] + coeff_friction*cos(*theta)*r_diff[0]);
+
+        T2 = T2/denom2;
+
+        if ( m_block*g > T1*sin(*theta) ){
+            *T = T1;
+        } else if ( m_block*g <= T2*sin(*theta) ){
+            *T = T2;
+        } else { 
+            printf("ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"); 
+        }
 
         Tension[0] = *T*cos(*theta);
         Tension[1] = *T*sin(*theta);
-    
+        
         N = m_block*g - Tension[1];
 
         F_friction = -coeff_friction*fabs(N)*cos(*theta);
 
-        #ifdef DEBUG
-            printf("v almost zero\nv_block=%.10f\n", v_block[0]);
-            printf("*T=%f, theta=%f\n", *T, *theta);
-            printf("Tx=%f, Ty=%f\n", Tension[0], Tension[1]);
-            printf("F_friction=%f\n", F_friction);
-            printf("\n");
-        #endif
+        // If the computed tension is bigger than friction force, block moves
 
-        if ( fabs(Tension[0]) > fabs(F_friction) ){
+        /*if ( fabs(Tension[0]) >= fabs(F_friction) ){ 
             a_block[0] = ( Tension[0] + F_friction )/m_block;
-        }
-        else { // F_friction = -Tension[0], ==> a_block[0] = 0
+        }*/
+
+        if ( fabs(Tension[0]) < fabs(F_friction) ){
+
+        // If not, recompute friction as: F_friction = -Tension[0]; which gives a_block[0] = 0
+
+        //else { 
+
+            *sector = 3;
             
             denom = R*(m+m_block)/(m*m_block) 
             - sin(*theta)*r_diff[1]/m_block - cos(*theta)*r_diff[0]/m_block;
@@ -140,46 +179,61 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
             F_friction = -Tension[0];
             
-            a_block[0] = ( Tension[0] + F_friction )/m_block;
-        } 
+            //a_block[0] = ( Tension[0] + F_friction )/m_block; // is zero
+        }
+        
+        a_block[0] = ( Tension[0] + F_friction )/m_block; // is zero
 
-        printf("i=%d, v < threshold = %f, T=%f\n", it, v_block[0], *T);
     }
-    else { // block moving, |v| > 10E-6
 
-        denom = R*(m+m_block)/(m*m_block)
+     // ========================== CASE 2) BLOCK MOVING (|v| >= 10E-6) ===> Fmu = -mu*|N|*vx/|vx| =====================
+
+    else {
+
+        // |Mg| > |Tz|
+
+        *sector = 4;
+
+        denom1 = R*(m+m_block)/(m*m_block)
                 - sin(*theta)/m_block*(r_diff[1] - coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
 
-        *T = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
+        T1 = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
             + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
             - g*(r_diff[1] - coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
 
-        *T = *T/denom;
+        T1 = T1/denom1;
+
+        denom2 = R*(m+m_block)/(m*m_block)
+                    - sin(*theta)/m_block*(r_diff[1] + coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
+
+        T2 = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
+            + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
+            - g*(r_diff[1] + coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
+
+        T2 = T2/denom2;
+
+        if ( m_block*g > T1*sin(*theta) ) {
+            *T = T1;
+        } else if ( m_block*g <= T2*sin(*theta) ){
+            *T = T2;
+        } else {
+            printf("ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"); 
+        }
 
         Tension[0] = *T*cos(*theta);
         Tension[1] = *T*sin(*theta);
-    
+
         N = m_block*g - Tension[1];
 
         F_friction = -coeff_friction*fabs(N)*v_block[0]/fabs(v_block[0]);
 
         a_block[0] = ( Tension[0] + F_friction )/m_block;
 
-        printf("i=%d, v > threshold = %f, T=%f\n", it, v_block[0], *T);
-
-    #ifdef DEBUG
-        printf("PARTE2\nv_block=%.10f\n", v_block[0]);
-        printf("*T=%f, theta=%f\n", *T, *theta);
-        printf("Tx=%f, Ty=%f\n", Tension[0], Tension[1]);
-        printf("F_friction=%f\n", F_friction);
-        printf("\n");
-    #endif
     }
 
-    a_block[1] = 0;
 
     v_block[0] = v_block[0] + h*a_block[0]; 
-    v_block[1] = v_block[1] + h*a_block[1];
+    v_block[1] = 0;
 
     r_block[0] = r_block[0] + h*v_block[0]; 
     r_block[1] = r_block[1] + h*v_block[1];
