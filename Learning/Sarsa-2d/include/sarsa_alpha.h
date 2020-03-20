@@ -6,26 +6,47 @@
 
 #define PI 3.1415926535897932384626433
 
+#define theta0 0.
+#define vtheta0 0.1
+#define dim 2
+#define PENALTY -200
+
 #define n_actions 3 // 0 diminuisco alpha, 1 rimango, 2 aumento
 #define Gamma 0.9999999999
-#define learning_episodes 1000
-#define max_steps 1000000
+#define learning_episodes 2000
+#define max_steps 2000000
+
+double Alpha = 0.001; // ordine di grandezza=h/tempo_episodio_in_sec(al minimo caduta)
+
 //n_alphas defined in fagiano_model_constant
 
 //#define DEBUGSARSA
 
-void fill_Q_mat(FILE *Q_mat_file, double *Q){
+void fill_Q_mat(FILE *Q_mat_file, double *Q, int episode){
+
+  for (int i=0; i<n_alphas; i++){
+    fprintf(Q_mat_file,"%d,", episode);
+    fprintf(Q_mat_file,"%d,", i);
+    for (int j=0; j<n_actions; j++){
+      fprintf(Q_mat_file,"%f", Q[i*n_actions + j]);
+      if (j!=n_actions-1){ fprintf(Q_mat_file,","); }
+    }
+  fprintf(Q_mat_file,"\n");
+  }
+  fprintf(Q_mat_file,"\n");
+  
+}
+
+void fill_Q_count(FILE *Q_mat_file, int *Q){
 
   for (int i=0; i<n_alphas; i++){
     for (int j=0; j<n_actions; j++){
-          fprintf(Q_mat_file,"%f ", Q[i*n_actions + j]);
+          fprintf(Q_mat_file,"%d ", Q[i*n_actions + j]);
         }
       }
   fprintf(Q_mat_file,"\n");
   
 }
-
-double Alpha = 0.01; // ordine di grandezza=h/tempo_episodio_in_sec(al minimo caduta)
 
 void print_mat(double * Q){
 
@@ -85,6 +106,17 @@ int check(int s_alpha){
 }
 
 void initialize_Q(double * Q, double max_Q_value){
+
+    for (int i=0; i<n_alphas; i++){
+      for (int j=0; j<n_actions; j++){
+        if (i == 0 && j == 0) Q[i*n_actions + j] = 0;
+        else if (i == n_alphas-1 && j == n_actions-1) Q[i*n_actions + j] = 0;
+        else Q[i*n_actions + j] = max_Q_value;
+      }
+    }
+}
+
+void initialize_Q_count(int * Q, int max_Q_value){
 
     for (int i=0; i<n_alphas; i++){
       for (int j=0; j<n_actions; j++){

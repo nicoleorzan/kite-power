@@ -4,10 +4,10 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define theta0 PI/4.
-#define vtheta0 -0.5
+#define theta0 PI/2.
+#define dtheta0 -0.5
 #define phi0 0.
-#define vphi0 0.
+#define dphi0 0.
 #define dim 3
 #define mu 0.
 
@@ -78,16 +78,22 @@ int main(int argc, char *argv[]){
 
     double theta = theta0;
     double phi = phi0;
+    double dtheta = dtheta0;
+    double dphi = dphi0;
     double r_diff_modulo;
+    double v_diff_modulo;
 
     double lift=0, drag=0;
     double T = 0;
+    double F_attr;
     double F_vinc;
     double theta_star;
     int stability = 0;
     int decollato = 0;
 
-    variables_initialization(rk, vk, ak, theta, phi, vtheta0, vphi0, r_block, v_block, a_block);
+    int sector = 0;
+
+    variables_initialization(rk, vk, ak, theta, phi, dtheta, dphi, r_block, v_block, a_block, r_diff, v_diff, a_diff);
 
     printf("init: %f       %f      %f      %f      %f      %f\n\n", rk[0], rk[1], rk[2], r_block[0], r_block[1], r_block[2]);
 
@@ -98,21 +104,10 @@ int main(int argc, char *argv[]){
     for (int i=0; i<STEPS; i++){
 
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
-                            &theta, &phi, alpha_index, mu, W, &lift, &drag, &T, i);
-
-        if (m_block*g < T*cos(theta)){
-            printf("m_block*g < T*cos(theta), exiting\n");
-            break;
-        }
+                            &theta, &phi, alpha_index, mu, W, &lift, &drag, &T, &F_attr, i, &sector);
 
         r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1] + r_diff[2]*r_diff[2]);
-        
-        if (rk[2] <= 0.) {
-            printf("Kite Fall, steps %d, z<0, break\n", i);
-            fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f      %f      %f      %f\n", \
-                    t, rk[0], rk[1], 0., r_block[0], r_block[1], r_block[2], theta, phi, r_diff_modulo);
-            break;
-        }
+        F_vinc = m_block*g - T*sin(theta);
 
         // moving the kite to put it again at distance R with the block
 
@@ -120,36 +115,46 @@ int main(int argc, char *argv[]){
         rk[1] = r_block[1] + (rk[1] - r_block[1])/fabs(r_diff_modulo)*R;
         rk[2] = r_block[2] + (rk[2] - r_block[2])/fabs(r_diff_modulo)*R;
 
-        if (i%PRINTSTEP == 0){
-
+        if (i%PRINTSTEP == 0 || rk[2] <= 0.){
             fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f      %f      %f      %f\n", \
                     t, rk[0], rk[1], rk[2], r_block[0], r_block[1], r_block[2], theta, phi, r_diff_modulo);
+            if (rk[2] <=0. ){ // maybe put rk[2] = 0
+                printf("Kite Fall, steps %d, z<0, break\n", i);
+                break;
+            }
         }
 
         t += 1;
 
-        F_vinc = m_block*g - T*cos(theta);
-
         if (F_vinc < 0) {
             decollato = 1;
         }
+
     }
 
-    if ( rk[1] > 0.) {
-        printf("iter, alpha, mu, theta0, Theta_fin, v_block_fin_x, v_block_fin_y, F_vinc, ");
-        printf("Tension, Lift, Drag, Wind_x, Wind_y, Wind_z\n");
-        
-        printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n", \
-        t, alphas[alpha_index], mu, theta0, theta, v_block[0], v_block[1], \
-        F_vinc, T, lift, drag, W[0], W[1], W[2]);
-    } else {
-        printf("iter, alpha, mu, theta0, Theta_fin, v_block_fin_x, v_block_fin_y, F_vinc, ");
-        printf("Tension, Lift, Drag, Wind_x, Wind_y, Wind_z\n");
+    v_diff_modulo = sqrt(v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1] + v_diff[2]*v_diff[2]);
 
-        printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n", \
-        t, alphas[alpha_index], mu, theta0, theta, v_block[0], v_block[1], \
-        F_vinc, T, lift, drag, W[0], W[1], W[2]);
+    dtheta = -1/(sqrt(1-(r_diff[2]/r_diff_modulo)*(r_diff[2]/r_diff_modulo)))*(v_diff[2]*r_diff_modulo-r_diff[2]*v_diff_modulo)/(r_diff_modulo*r_diff_modulo);
+
+    dphi = 1/(1+(r_diff[1]/r_diff[0])*(r_diff[1]/r_diff[0]))*(v_diff[1]*r_diff[0] - r_diff[0]*v_diff[1])/(r_diff[0]*r_diff[0]);
+    
+    if (rk[2] <= 0){
+        rk[2] = 0;
+        v_block[0] = 0;
+        v_block[1] = 0;
+        vk[0] = 0;
+        vk[1] = 0;
+        vk[2] = 0;
+        theta = PI/2;
+        dtheta = 0;
     }
+
+    printf("iter, tot time, m_block, alpha, mu, theta0, theta_fin, v_block_fin_x, v_block_fin_y, Wind_x, Wind_y, Wind_z");
+    printf(" vrelkite_x, vrelkite_y, vrelkite_z, F_vinc, Tension, Lift, Drag\n");
+    
+    printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n", \
+    t, t*h, m_block, alphas[alpha_index], mu, theta0, theta, v_block[0], v_block[1], W[0], W[1], W[2], \
+    vk[0] - W[0], vk[1] - W[1], vk[2] - W[2], F_vinc, T, lift, drag);
 
     free(rk);
     free(vk);

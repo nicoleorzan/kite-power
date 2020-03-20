@@ -1,48 +1,52 @@
-#include "../../Dynamics/dynamics_2d_spherical.h"
-#include "sarsa_alpha.h"
+#include "../../../Dynamics/dynamics_2d_cartesian.h"
+#include "../include/sarsa_alpha.h"
 
 #define decision_time 1000
-
-#define theta0 0.
-#define vtheta0 0.1
-//#define k 0.5
+double W[2] = {20, 0};
 
 double reward_dt = h*decision_time;
 
 int main(int argc, char *argv[]){
 
-    FILE *out ,*rew, *Q_mat, *policy;
-    out = fopen("out.txt", "w");
-    rew = fopen("rewards.txt", "w");
-    Q_mat = fopen("Q_matrix.txt", "w");
-    policy = fopen("policy.txt", "w");
-    fprintf(out, "t         x_kite          z_kite         x_blocco          z_blocco          wind_x       wind_y       v_blocco_x\n");
-    fprintf(out, "t       Q1      Q2      Q3      Q4      Q5      Q6      Q7      Q8      Q9      Q10     Q11     Q12      Q13     Q14n");
+    FILE *out ,*rew, *Q_mat, *Q_mat_count, *policy;
+    out = fopen("cout.txt", "w");
+    rew = fopen("crewards.txt", "w");
+    Q_mat = fopen("cQ_matrix.txt", "w");
+    Q_mat_count = fopen("cQ_counter.txt", "w");
+    policy = fopen("cpolicy.txt", "w");
+    fprintf(out, "t         x_kite          z_kite         x_block          z_block          wind_x       wind_y       v_block_x\n");
+    fprintf(Q_mat, "episode,alpha_idx,action_0,action_1,action_2\n");
     fprintf(policy, "step        alpha       action      reward        Q[s+0]      Q[s+1]      Q[s+2]\n");
 
     // vettori moto kite dall'origine fissa (x, z)
-    double *rk = (double*) malloc(2 * sizeof(double)); 
-    double *vk = (double*) malloc(2 * sizeof(double)); 
-    double *ak = (double*) malloc(2 * sizeof(double)); 
+    double *rk = (double*) malloc(dim * sizeof(double)); 
+    double *vk = (double*) malloc(dim * sizeof(double)); 
+    double *ak = (double*) malloc(dim * sizeof(double)); 
 
-    // vettori moto blocco dall'origine fissa (x, z)
-    double *x_blocco = (double*) malloc(2 * sizeof(double)); 
-    double *v_blocco = (double*) malloc(2 * sizeof(double));
-    double *a_blocco = (double*) malloc(2 * sizeof(double));  
+    // vettori moto block dall'origine fissa (x, z)
+    double *r_block = (double*) malloc(dim * sizeof(double)); 
+    double *v_block = (double*) malloc(dim * sizeof(double));
+    double *a_block = (double*) malloc(dim * sizeof(double)); 
+
+    double *r_diff = (double*) malloc(dim * sizeof(double)); 
+    double *v_diff = (double*) malloc(dim * sizeof(double)); 
+    double *a_diff = (double*) malloc(dim * sizeof(double));
+
+    double r_diff_modulo; 
     
-    // theta, dtheta, ddtheta
-    double *theta = (double*) malloc(3 * sizeof(double));  
-    double T = 0;
+    double theta;
+    double vtheta;
 
     double * Q = (double*) malloc(n_alphas * n_actions * sizeof(double));
+    int * Q_count = (int*) malloc(n_alphas * n_actions * sizeof(int));
 
     double reward = 0;
     double tot_reward = 0;
-    double penalty = -200;
 
-    double theta_star;
+    //double theta_star;
 
-    double W[2] = {20, 0};
+    double T = 0;
+    double F_attr = 0;
     double lift=0, drag=0;
 
     // SARSA STATE
@@ -51,13 +55,16 @@ int main(int argc, char *argv[]){
     // SARSA ACTION
     int a_alpha = 0, a_alpha1 = 0;           
 
-    int episode = 0, it = 0;
-    double epsilon;
+    int episode = 0;
+    int it = 0;
+    double epsilon = 0.9;
+    int sector = 0;
 
     double reward_max = W[0]*max_steps*h;
     printf("reward max %f\n\n", reward_max);
 
     initialize_Q(Q, reward_max);
+    initialize_Q_count(Q_count, 0);
 
     //load_matrix(Q, "Q_matrix.dat");
 
@@ -67,9 +74,12 @@ int main(int argc, char *argv[]){
 
     while (episode < learning_episodes){
 
-        epsilon = 0.9;
-
+        if (episode == (int)(learning_episodes/4)){
+            Alpha = Alpha*0.1;
+            printf("Decreasing learning rate: %f\n", Alpha);
+        }
         if (episode == (int)(learning_episodes/2)){
+            epsilon = 0.95;
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
         }
@@ -82,7 +92,10 @@ int main(int argc, char *argv[]){
 
         printf("Episode: %d\nepsilon: %f\n", episode, epsilon);
 
-        variables_initialization(x_blocco, v_blocco, a_blocco, theta, rk, vk, ak, theta0, vtheta0);
+        theta = theta0;
+        vtheta = vtheta0;
+
+        variables_initialization(rk, vk, ak, theta, vtheta, r_block, v_block, a_block, r_diff, v_diff, a_diff);
 
         s_alpha = 10;
         a_alpha = select_alpha_action(epsilon, Q, s_alpha, episode);
@@ -91,19 +104,13 @@ int main(int argc, char *argv[]){
         reward = 0;
         tot_reward = 0.; 
 
-        printf("theta0 = %f, vel_theta0 = %f\n", theta[0], theta[1]);
+        printf("theta0 = %f, vel_theta0 = %f\n", theta, vtheta);
         printf("W[0]=%f\n", W[0]);
         printf("W[1]=%f\n", W[1]);
 
-        integration_trajectory(rk, vk, ak, x_blocco, v_blocco, a_blocco, theta, &T, \
-                                s_alpha, W, &lift, &drag);
+        integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
+                            &theta, s_alpha, W, &lift, &drag, &T, &F_attr, it, &sector);
 
-        if (episode == learning_episodes - 1 ){
-            fprintf(policy, "%d      %f     %d     %f     %f     %f     %f\n", \
-            it, alphas[s_alpha], a_alpha, reward, Q[s_alpha*n_actions + 0], \
-            Q[s_alpha*n_actions + 1], Q[s_alpha*n_actions + 2]);
-        }
-        
         while (rk[1] > 0){
 
             if (episode == learning_episodes - 1 && it%decision_time == 0){
@@ -114,21 +121,26 @@ int main(int argc, char *argv[]){
 
             if (it > max_steps){
                 printf("MAX STEPS, %d, exiting\n", max_steps);
-                printf("return=%f, space percurred=%f\n\n", tot_reward, x_blocco[0]);
+                printf("return=%f, space percurred=%f\n\n", tot_reward, r_block[0]);
 
                 fprintf(rew, "%d    %f\n", episode, tot_reward);
 
-                fill_Q_mat(Q_mat, Q);
+                fill_Q_mat(Q_mat, Q, episode);
+                fill_Q_count(Q_mat_count, Q_count);
 
                 break;
             }
 
-            integration_trajectory(rk, vk, ak, x_blocco, v_blocco, a_blocco, theta, &T, \
-                                   s_alpha, W, &lift, &drag);
+            integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
+                            &theta, s_alpha, W, &lift, &drag, &T, &F_attr, it, &sector);
 
-            theta_star = atan((lift - m*g)/drag); 
+            r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1]);
+            rk[0] = r_block[0] + (rk[0] - r_block[0])/fabs(r_diff_modulo)*R;
+            rk[1] = r_block[1] + (rk[1] - r_block[1])/fabs(r_diff_modulo)*R;
 
-            reward = fabs(v_blocco[0])*reward_dt;
+            //theta_star = atan((lift - m*g)/drag); 
+
+            reward = fabs(v_block[0])*reward_dt;
 
             if (it%decision_time == 0){
                 tot_reward += reward;
@@ -146,25 +158,28 @@ int main(int argc, char *argv[]){
                 printf("ERROR IN UPDATE STATE");
                 episode = learning_episodes;
                 break;
-            }
-            */
-
+            }*/
+            
             // save data of last episode for plot
             if ( (episode == learning_episodes - 1) && (it%decision_time == 0) ){
                 fprintf(out, "%d       %f       %f      %f      %f      %f      %f     %f\n", it, \
-                    rk[0], rk[1], x_blocco[0], x_blocco[1], W[0], W[1], v_blocco[0]);
+                    rk[0], rk[1], r_block[0], r_block[1], W[0], W[1], v_block[0]);
             }
 
             if (rk[1] <= 0.) {
+
                 fprintf(rew, "%d    %f\n", episode, tot_reward);
 
                 printf("Kite fallen: z<0, steps=%d, break\n", it);
-                printf("return=%f, space percurred=%f\n\n", tot_reward, x_blocco[0]);
+                printf("return=%f, space percurred=%f\n\n", tot_reward, r_block[0]);
 
                 Q[s_alpha*n_actions + a_alpha] = Q[s_alpha*n_actions + a_alpha] + \
-                        Alpha*(reward + penalty - Q[s_alpha*n_actions + a_alpha]);
+                        Alpha*(reward + PENALTY - Q[s_alpha*n_actions + a_alpha]);
 
-                fill_Q_mat(Q_mat, Q);
+                Q_count[s_alpha*n_actions + a_alpha] += 1;
+
+                fill_Q_mat(Q_mat, Q, episode);
+                fill_Q_count(Q_mat_count, Q_count);
 
                 break;
             }
@@ -190,6 +205,8 @@ int main(int argc, char *argv[]){
                             - Q[s_alpha*n_actions + a_alpha]);
                 }
 
+                Q_count[s_alpha*n_actions + a_alpha] += 1;
+
                 // MOVE ON: S = S1, A = A1
 
                 s_alpha = s_alpha1;
@@ -207,25 +224,30 @@ int main(int argc, char *argv[]){
     print_mat(Q);
 
     printf("save matrix\n");
-    save_matrix(Q, "Q_matrix.dat");
-    printf("load matrix\n");
+    save_matrix(Q, "cQ_matrix.dat");
+    //printf("load matrix\n");
     //load_matrix(Q2, "Q_matrix.dat");
     //print_mat(Q2);
-
 
     free(rk);
     free(vk);
     free(ak);
+
+    free(r_diff);
+    free(v_diff);
+    free(a_diff);
+
+    free(r_block);
+    free(v_block);
+    free(a_block);
+
     free(Q);
-    //free(Q2);
-    free(x_blocco);
-    free(v_blocco);
-    free(a_blocco);
-    free(theta);
+    free(Q_count);
 
     fclose(out);
     fclose(rew);
     fclose(Q_mat);
+    fclose(Q_mat_count);
     fclose(policy);
     
     remove("a.out");

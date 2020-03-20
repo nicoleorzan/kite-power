@@ -184,7 +184,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         
     }
 
-     // ========================== CASE 2) BLOCK MOVING (|v| >= 10E-6) ===> Fmu = -mu*|N|*vx/|vx| =====================
+    // ========================== CASE 2) BLOCK MOVING (|v| >= 10E-6) ===> Fmu = -mu*|N|*vx/|vx| =====================
 
     else {
 
@@ -198,6 +198,8 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
             - g*(r_diff[1] - coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
 
         T1 = T1/denom1;
+
+        // |Mg| < |Tz|
 
         denom2 = R*(m+m_block)/(m*m_block)
                     - sin(*theta)/m_block*(r_diff[1] + coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
