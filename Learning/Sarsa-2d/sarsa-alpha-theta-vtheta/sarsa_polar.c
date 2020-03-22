@@ -145,7 +145,7 @@ int main(int argc, char *argv[]){
             if (it > max_steps){
                 printf("MAX STEPS, %d, exiting\n", max_steps);
                 printf("return=%f, space percurred=%f\n\n", tot_reward, r_block[0]);
-                fprintf(rew, "%d,%f,%f,%d,%f\n", episode, epsilon, Alpha, max_steps, tot_reward);
+                fprintf(rew, "%d,%f,%f,%d,%f\n", episode, epsilon, Alpha, it, tot_reward);
 
                 if ( episode%save_matrix_step == 0){
                     fill_Q_mat(Q_mat, Q, episode);

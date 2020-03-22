@@ -2,8 +2,6 @@
 #include "../../../Dynamics/winds.h"
 #include "sarsa_alpha.h"
 
-#define decision_time 1000
-
 double reward_dt = h*decision_time;
 
 int main(int argc, char *argv[]){
@@ -82,16 +80,20 @@ int main(int argc, char *argv[]){
 
     while (episode < learning_episodes){
 
-        if (episode == (int)(learning_episodes/4)){
+        if (episode == (int)(learning_episodes/5)){
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
         }
-        if (episode == (int)(learning_episodes/2)){
+        if (episode == (int)(learning_episodes*2/5)){
+            Alpha = Alpha*0.1;
+            printf("Decreasing learning rate: %f\n", Alpha);
+        }
+        if (episode == (int)(learning_episodes*3/5)){
             epsilon = epsilon + 0.05;
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
         }
-        if (episode == (int)(learning_episodes*3/4)){
+        if (episode == (int)(learning_episodes*5.4)){
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
         }
@@ -137,7 +139,7 @@ int main(int argc, char *argv[]){
                 printf("MAX STEPS, %d, exiting\n", max_steps);
                 printf("return=%f, space percurred=%f\n\n", tot_reward, r_block[0]);
 
-                fprintf(rew, "%d,%f,%f,%d,%f\n", episode, epsilon, Alpha, max_steps, tot_reward);
+                fprintf(rew, "%d,%f,%f,%d,%f\n", episode, epsilon, Alpha, it, tot_reward);
 
                 fill_Q_mat(Q_mat, Q, episode);
                 fill_Q_count(Q_mat_count, Q_count);

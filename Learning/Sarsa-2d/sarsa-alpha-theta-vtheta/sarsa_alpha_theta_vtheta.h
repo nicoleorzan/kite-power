@@ -94,10 +94,11 @@ void initialize_Q(double *Q, double max_Q_value){
         for (int kk=0; kk<n_thetas_vel; kk++){
 
           Q[i*n_actions*n_thetas*n_thetas_vel + j*n_thetas*n_thetas_vel + p*n_thetas_vel + kk] = max_Q_value;
-          if (j == 0 && kk ==0){
+
+          if (i == 0 && j ==0){
               Q[i*n_actions*n_thetas*n_thetas_vel + j*n_thetas*n_thetas_vel + p*n_thetas_vel + kk] = 0;
           }
-          if (j == n_thetas-1 && kk == n_thetas_vel-1){
+          if (i == n_alphas-1 && j == n_actions-1){
               Q[i*n_actions*n_thetas*n_thetas_vel + j*n_thetas*n_thetas_vel + p*n_thetas_vel + kk] = 0;
           }
 

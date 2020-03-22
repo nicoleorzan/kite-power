@@ -11,8 +11,10 @@
 
 #define n_actions 3 // 0 diminuisco alpha, 1 rimango, 2 aumento
 
+#define decision_time 1000
+
 #define Gamma 0.9999999999
-#define learning_episodes 2000
+#define learning_episodes 3000
 #define max_steps 1000000
 
 #define s_alpha0 10
