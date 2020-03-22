@@ -1,11 +1,9 @@
 #include "Dynamics/dynamics_2d_cartesian.h"
-//#include "Dynamics/winds.h"
+#include "Dynamics/winds.h"
 #include <time.h>
 #include <string.h>
 #include <stdbool.h>
 
-#define theta0 0.
-#define vtheta0 0.5
 #define dim 2
 
 // ============== FILE INPUT: ATTACK ANGLE AND WIND COEFF AND IF TRAJECTORY IS NEEDED ============
@@ -74,6 +72,7 @@ int main(int argc, char *argv[]){
     double *a_diff = (double*) malloc(dim * sizeof(double)); 
 
     double theta = theta0;
+    double vtheta = vtheta0;
 
     double r_diff_modulo;
 
@@ -87,7 +86,9 @@ int main(int argc, char *argv[]){
     int decollato = 0;
     double dtheta;
 
-    variables_initialization(rk, vk, ak, theta0, vtheta0, r_block, v_block, a_block, r_diff, v_diff, a_diff);
+    variables_initialization(rk, vk, ak, theta, vtheta, r_block, v_block, a_block, r_diff, v_diff, a_diff);
+
+    //streamfunction2d(rk, W);
 
     int t = 0;   
 
@@ -96,7 +97,10 @@ int main(int argc, char *argv[]){
     for (int i=0; i<STEPS; i++){
 
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
-                            &theta, alpha_index, W, &lift, &drag, &T, &F_attr, i, &sector);
+                            &theta, &vtheta, alpha_index, W, &lift, &drag, &T, &F_attr, i, &sector);
+
+        //streamfunction2d(rk, W);
+
         //printf("T=%f, Fattr=%f, sector=%d\n", T, F_attr, sector);
 
         r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1]);
@@ -126,8 +130,6 @@ int main(int argc, char *argv[]){
     }
 
     theta_star = atan((lift - m*g)/drag);
-
-    dtheta = 1/(1+r_diff[1]/r_diff[0])*(v_diff[1]*r_diff[0] - r_diff[1]*v_diff[0])/(r_diff[0]*r_diff[0]);
 
     stability = 0; // 0 = stability not reached
 

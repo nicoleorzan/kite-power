@@ -1,11 +1,9 @@
 #include "Dynamics/dynamics_2d_spherical_cramer.h"
-//#include "Dynamics/winds.h"
+#include "Dynamics/winds.h"
 #include <time.h>
 #include <string.h>
 #include <stdbool.h>
 
-#define theta0 0.
-#define vtheta0 0.5
 #define dim 2
 
 // ============== FILE INPUT: ATTACK ANGLE AND WIND COEFF AND IF TRAJECTORY IS NEEDED ============
@@ -55,7 +53,7 @@ int main(int argc, char *argv[]){
     FILE *trajectory, *wind;
     trajectory = fopen("out.txt", "w+"); // fopen(filename_trajectory, "w+");
 
-    fprintf(trajectory, "t      x_kite      z_kite      x_block      z_block      v_block    Tension\n");
+    fprintf(trajectory, "t      x_kite      z_kite      x_block      z_block      v_block      Windx      Windy    Tension\n");
 
     // ============================ VARIABLES DEFINITION ============================
 
@@ -83,6 +81,8 @@ int main(int argc, char *argv[]){
 
     variables_initialization(rk, vk, ak, theta0, vtheta0, r_block, v_block, a_block, theta);
 
+    streamfunction2d(rk, W);
+
     int t = 0;   
 
     // ============================ KITE FLYING LOOP, STOPS WHEN FALL OCCURS ============================
@@ -91,11 +91,14 @@ int main(int argc, char *argv[]){
 
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, theta, alpha_index, \
                              W, &lift, &drag, &T, &F_attr, i, &sector);
+
+        streamfunction2d(rk, W);
+
         //printf("T=%f, Fattr=%f, sector=%d\n", T, F_attr, sector);    
 
         if (i%PRINTSTEP == 0  || rk[1] <= 0.){
-            fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f\n", \
-                    t, rk[0], rk[1], r_block[0], r_block[1], v_block[0], T);
+            fprintf(trajectory, "%d       %f       %f      %f      %f      %f       %f       %f      %f\n", \
+                    t, rk[0], rk[1], r_block[0], r_block[1], v_block[0], W[0], W[1], T);
             if (rk[1] <=0. ){
                 //printf("Kite Fall, steps %d, z<0, break\n", i);
                 break;

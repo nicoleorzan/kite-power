@@ -4,8 +4,8 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define theta0 PI/2.
-#define dtheta0 -0.5
+#define _theta0 PI/2.
+#define _dtheta0 -1.0
 #define phi0 0.
 #define dphi0 0.
 #define dim 3
@@ -76,9 +76,9 @@ int main(int argc, char *argv[]){
     double *v_diff = (double*) malloc(dim * sizeof(double));
     double *a_diff = (double*) malloc(dim * sizeof(double)); 
 
-    double theta = theta0;
+    double theta = _theta0;
     double phi = phi0;
-    double dtheta = dtheta0;
+    double dtheta = _dtheta0;
     double dphi = dphi0;
     double r_diff_modulo;
     double v_diff_modulo;
@@ -153,7 +153,7 @@ int main(int argc, char *argv[]){
     printf(" vrelkite_x, vrelkite_y, vrelkite_z, F_vinc, Tension, Lift, Drag\n");
     
     printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n", \
-    t, t*h, m_block, alphas[alpha_index], mu, theta0, theta, v_block[0], v_block[1], W[0], W[1], W[2], \
+    t, t*h, m_block, alphas[alpha_index], mu, _theta0, theta, v_block[0], v_block[1], W[0], W[1], W[2], \
     vk[0] - W[0], vk[1] - W[1], vk[2] - W[2], F_vinc, T, lift, drag);
 
     free(rk);

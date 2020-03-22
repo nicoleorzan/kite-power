@@ -6,17 +6,19 @@
 
 #define PI 3.1415926535897932384626433
 
-#define theta0 0.
-#define vtheta0 0.1
 #define dim 2
 #define PENALTY -200
 
 #define n_actions 3 // 0 diminuisco alpha, 1 rimango, 2 aumento
+
 #define Gamma 0.9999999999
 #define learning_episodes 2000
-#define max_steps 2000000
+#define max_steps 1000000
+
+#define s_alpha0 10
 
 double Alpha = 0.001; // ordine di grandezza=h/tempo_episodio_in_sec(al minimo caduta)
+double epsilon = 0.9;
 
 //n_alphas defined in fagiano_model_constant
 
@@ -66,9 +68,9 @@ void save_matrix(double * Q, char * name){
   FILE *dat = fopen(name, "w"); // opens new file for writing
   if (dat)
   {
-    for (int k = 0; k < n_alphas; k++){
+    for (int kk = 0; kk < n_alphas; kk++){
       for (int j = 0; j < n_actions; j++){
-        fprintf(dat, "%16.8e ", Q[k*n_actions + j]);
+        fprintf(dat, "%16.8e ", Q[kk*n_actions + j]);
       }
     }
   }
@@ -81,9 +83,9 @@ void load_matrix(double * Q, char * name){
   FILE *dat = fopen(name, "r"); // opens file for reading //"Qmatrix.dat"
   if (dat)
   {
-    for (int k = 0; k < n_alphas; k++){
+    for (int kk = 0; kk < n_alphas; kk++){
       for (int j=0; j<n_actions; j++){
-        fscanf(dat, "%lf", &Q[k*n_actions + j] );
+        fscanf(dat, "%lf", &Q[kk*n_actions + j] );
       }
     }
   }
@@ -116,13 +118,11 @@ void initialize_Q(double * Q, double max_Q_value){
     }
 }
 
-void initialize_Q_count(int * Q, int max_Q_value){
+void initialize_Q_count(int * Q, int value){
 
     for (int i=0; i<n_alphas; i++){
       for (int j=0; j<n_actions; j++){
-        if (i == 0 && j == 0) Q[i*n_actions + j] = 0;
-        else if (i == n_alphas-1 && j == n_actions-1) Q[i*n_actions + j] = 0;
-        else Q[i*n_actions + j] = max_Q_value;
+        Q[i*n_actions + j] = value;
       }
     }
 }
@@ -190,7 +190,7 @@ int select_alpha_action(double epsilon, double * Q, int s_alpha, int episode){
     a1 = 0;
     if (s_alpha == 0) { 
       a1 = 1; 
-      }
+    }
 
     /* fix ending state: 3 (n_actions), NOT INCLUDED, in any state; 2 (n_actions -1)
      only if starting state is the last one in the array */
@@ -198,7 +198,7 @@ int select_alpha_action(double epsilon, double * Q, int s_alpha, int episode){
     int max_value = n_actions;
     if (s_alpha == n_alphas - 1) { 
       max_value = n_actions - 1; 
-      }
+    }
 
     #ifdef DEBUGSARSA
         printf("  starting action a1_0 = %d, max value (NOT INCLUDED)= %d\n", a1, max_value);

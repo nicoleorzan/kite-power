@@ -62,7 +62,7 @@ void variables_initialization(double *rk, double *vk, double *ak,
 void integration_trajectory(double * rk, double * vk, double * ak, // Kite variables
                             double * r_block, double * v_block, double * a_block, // Block variables
                             double * r_diff, double * v_diff, double * a_diff, 
-                            double * theta,
+                            double * theta, double *dtheta,
                             int alpha,
                             double * W, double * lc, double * dc,
                             double * T, double *F_attr, int it, int * sector){
@@ -77,6 +77,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     a_diff[1] = ak[1] - a_block[1];
 
     *theta = atan2(r_diff[1], r_diff[0]);
+    *dtheta = 1/(1+r_diff[1]/r_diff[0])*(v_diff[1]*r_diff[0] - r_diff[1]*v_diff[0])/(r_diff[0]*r_diff[0]);
                         
     va[0] = vk[0] - W[0];              // Apparent velocity on x
     va[1] = vk[1] - W[1];              // Apparent velocity on z

@@ -32,7 +32,7 @@ double T2, a_block2, ddtheta2;
 double theta_star;
 
 void variables_initialization(double * rk, double * vk, double * ak, 
-                            double theta0, double vtheta0,
+                            double _theta, double _vtheta,
                             double * r_block, double * v_block, double * a_block,
                             double * theta){ // Angle, velocity and acceleration values
     r_block[0] = 0;
@@ -44,8 +44,8 @@ void variables_initialization(double * rk, double * vk, double * ak,
     a_block[0] = 0;
     a_block[1] = 0;
 
-    theta[0] = theta0;
-    theta[1] = vtheta0;
+    theta[0] = _theta;
+    theta[1] = _vtheta;
     theta[2] = 0.;
 
     rk[0] = R*cos(theta[0]) + r_block[0];

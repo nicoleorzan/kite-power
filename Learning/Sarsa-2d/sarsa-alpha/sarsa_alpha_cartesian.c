@@ -1,22 +1,25 @@
 #include "../../../Dynamics/dynamics_2d_cartesian.h"
-#include "../include/sarsa_alpha.h"
+#include "../../../Dynamics/winds.h"
+#include "sarsa_alpha.h"
 
 #define decision_time 1000
-double W[2] = {20, 0};
 
 double reward_dt = h*decision_time;
 
 int main(int argc, char *argv[]){
 
     FILE *out ,*rew, *Q_mat, *Q_mat_count, *policy;
-    out = fopen("cout.txt", "w");
-    rew = fopen("crewards.txt", "w");
-    Q_mat = fopen("cQ_matrix.txt", "w");
-    Q_mat_count = fopen("cQ_counter.txt", "w");
-    policy = fopen("cpolicy.txt", "w");
+    out = fopen("cout_streamfunction.txt", "w");
+    rew = fopen("crewards_streamfunction.txt", "w");
+    Q_mat = fopen("cQ_matrix_streamfunction.txt", "w");
+    Q_mat_count = fopen("cQ_counter_streamfunction.txt", "w");
+    policy = fopen("cpolicy_streamfunction.txt", "w");
+    fprintf(rew, "episode,epsilon,Alpha,steps,return\n");
     fprintf(out, "t         x_kite          z_kite         x_block          z_block          wind_x       wind_y       v_block_x\n");
     fprintf(Q_mat, "episode,alpha_idx,action_0,action_1,action_2\n");
     fprintf(policy, "step        alpha       action      reward        Q[s+0]      Q[s+1]      Q[s+2]\n");
+
+    // ======== DYNAMICS VARIABLES =======
 
     // vettori moto kite dall'origine fissa (x, z)
     double *rk = (double*) malloc(dim * sizeof(double)); 
@@ -37,17 +40,20 @@ int main(int argc, char *argv[]){
     double theta;
     double vtheta;
 
+    double W[dim];
+
+    double T = 0;
+    double F_attr = 0;
+    double lift=0, drag=0;
+    int sector = 0;
+
+    // ======== LEARNING VARIABLES =======
+
     double * Q = (double*) malloc(n_alphas * n_actions * sizeof(double));
     int * Q_count = (int*) malloc(n_alphas * n_actions * sizeof(int));
 
     double reward = 0;
     double tot_reward = 0;
-
-    //double theta_star;
-
-    double T = 0;
-    double F_attr = 0;
-    double lift=0, drag=0;
 
     // SARSA STATE
     int s_alpha, s_alpha1;
@@ -55,12 +61,14 @@ int main(int argc, char *argv[]){
     // SARSA ACTION
     int a_alpha = 0, a_alpha1 = 0;           
 
-    int episode = 0;
     int it = 0;
-    double epsilon = 0.9;
-    int sector = 0;
+    int episode = 0;
 
-    double reward_max = W[0]*max_steps*h;
+    rk[0] = 0;
+    rk[1] = R;
+    streamfunction2d(rk, W);
+    printf("W0 = %f, W1 = %f\n", W[0], W[1]);
+    double reward_max = sqrt(W[0]*W[0] + W[1]*W[1])*max_steps*h;
     printf("reward max %f\n\n", reward_max);
 
     initialize_Q(Q, reward_max);
@@ -79,7 +87,7 @@ int main(int argc, char *argv[]){
             printf("Decreasing learning rate: %f\n", Alpha);
         }
         if (episode == (int)(learning_episodes/2)){
-            epsilon = 0.95;
+            epsilon = epsilon + 0.05;
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
         }
@@ -91,13 +99,16 @@ int main(int argc, char *argv[]){
         // ======================= EPISODE INITIALIZATION ==========================
 
         printf("Episode: %d\nepsilon: %f\n", episode, epsilon);
+        printf("Learning rate: %f\n", Alpha);
 
         theta = theta0;
         vtheta = vtheta0;
 
         variables_initialization(rk, vk, ak, theta, vtheta, r_block, v_block, a_block, r_diff, v_diff, a_diff);
 
-        s_alpha = 10;
+        streamfunction2d(rk, W);
+
+        s_alpha = s_alpha0;
         a_alpha = select_alpha_action(epsilon, Q, s_alpha, episode);
 
         it = 0;
@@ -105,11 +116,14 @@ int main(int argc, char *argv[]){
         tot_reward = 0.; 
 
         printf("theta0 = %f, vel_theta0 = %f\n", theta, vtheta);
+        printf("initial alpha state=%d\n", s_alpha);
         printf("W[0]=%f\n", W[0]);
         printf("W[1]=%f\n", W[1]);
 
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
-                            &theta, s_alpha, W, &lift, &drag, &T, &F_attr, it, &sector);
+                            &theta, &vtheta, s_alpha, W, &lift, &drag, &T, &F_attr, it, &sector);
+
+        streamfunction2d(rk, W);
 
         while (rk[1] > 0){
 
@@ -123,7 +137,7 @@ int main(int argc, char *argv[]){
                 printf("MAX STEPS, %d, exiting\n", max_steps);
                 printf("return=%f, space percurred=%f\n\n", tot_reward, r_block[0]);
 
-                fprintf(rew, "%d    %f\n", episode, tot_reward);
+                fprintf(rew, "%d,%f,%f,%d,%f\n", episode, epsilon, Alpha, max_steps, tot_reward);
 
                 fill_Q_mat(Q_mat, Q, episode);
                 fill_Q_count(Q_mat_count, Q_count);
@@ -132,13 +146,13 @@ int main(int argc, char *argv[]){
             }
 
             integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
-                            &theta, s_alpha, W, &lift, &drag, &T, &F_attr, it, &sector);
+                            &theta, &vtheta, s_alpha, W, &lift, &drag, &T, &F_attr, it, &sector);
 
             r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1]);
             rk[0] = r_block[0] + (rk[0] - r_block[0])/fabs(r_diff_modulo)*R;
             rk[1] = r_block[1] + (rk[1] - r_block[1])/fabs(r_diff_modulo)*R;
 
-            //theta_star = atan((lift - m*g)/drag); 
+            streamfunction2d(rk, W);
 
             reward = fabs(v_block[0])*reward_dt;
 
@@ -168,7 +182,7 @@ int main(int argc, char *argv[]){
 
             if (rk[1] <= 0.) {
 
-                fprintf(rew, "%d    %f\n", episode, tot_reward);
+                fprintf(rew, "%d,%f,%f,%d,%f\n", episode, epsilon, Alpha, it, tot_reward);
 
                 printf("Kite fallen: z<0, steps=%d, break\n", it);
                 printf("return=%f, space percurred=%f\n\n", tot_reward, r_block[0]);
@@ -210,6 +224,7 @@ int main(int argc, char *argv[]){
                 // MOVE ON: S = S1, A = A1
 
                 s_alpha = s_alpha1;
+
                 a_alpha = a_alpha1;
                 
             }
@@ -250,7 +265,7 @@ int main(int argc, char *argv[]){
     fclose(Q_mat_count);
     fclose(policy);
     
-    remove("a.out");
+    //remove("a.out");
 
     return 0;
 

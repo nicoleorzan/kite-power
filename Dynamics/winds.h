@@ -8,7 +8,7 @@
 #define epsilon_wind 0.1
 #define Lx 50
 #define Ly 50
-#define k 0.5
+#define k_wind 0.5
 
 #define mean_wind 25
 #define tau 5.0
@@ -19,10 +19,12 @@
 #define h0 100              // m
 #define hr 0.1              // m, roughness length
 
-void streamfunction(double *rk, double *ux, double *uy){ // kp kiteposition in (x,z)
+#define hh 10
 
-    *ux = k*rk[1]*(1+epsilon_wind*sin(PI*rk[0]/Lx)*cos(PI*rk[1]/Ly)*PI/Ly);
-    *uy = -(k*rk[1]*rk[1]/2*epsilon_wind*sin(PI*rk[1]/Ly)*cos(PI*rk[0]/Lx));
+void streamfunction2d(double *rk, double *W){ // kp kiteposition in (x,z)
+
+    W[0] = k_wind*rk[1]*(1+epsilon_wind*sin(PI*rk[0]/Lx)*cos(PI*rk[1]/Ly)*PI/Ly);
+    W[1] = -(k_wind*rk[1]*rk[1]/2*epsilon_wind*sin(PI*rk[1]/Ly)*cos(PI*rk[0]/Lx));
 }
 
 double ornstein_uhlenbeck(double * fluct){
@@ -32,7 +34,7 @@ double ornstein_uhlenbeck(double * fluct){
     double z1 = sqrt(-2.0*log(u1))*cos(2*PI*u2);
     //double z2 = sqrt(-2.0*log(u1))*sin(2*PI*u2);
 
-    double der_fluct = -*fluct/tau*h + sigma*z1*sqrt(h); // ????
+    double der_fluct = -*fluct/tau*hh + sigma*z1*sqrt(hh); // ????
     *fluct = *fluct + der_fluct;
 
     return mean_wind + *fluct;
