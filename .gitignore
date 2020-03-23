@@ -1,4 +1,4 @@
-*.out
+
 *.sh
-*.txt
 *.dat
+*.ipynb_checkpoints
