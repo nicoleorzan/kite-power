@@ -81,10 +81,10 @@ int main(int argc, char *argv[]){
 
     while (episode < learning_episodes){
 
-        if (episode == (int)(learning_episodes/4)){
+        /*if (episode == (int)(learning_episodes/4)){
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
-        }
+        }*/
         if (episode == (int)(learning_episodes/2)){
             epsilon = epsilon + 0.05;
             Alpha = Alpha*0.1;
@@ -97,6 +97,7 @@ int main(int argc, char *argv[]){
     
         // ======================= EPISODE INITIALIZATION ==========================
 
+        printf("Polar code\n");
         printf("Episode: %d\nepsilon: %f\n", episode, epsilon);
         printf("Learning rate: %f\n", Alpha);
 

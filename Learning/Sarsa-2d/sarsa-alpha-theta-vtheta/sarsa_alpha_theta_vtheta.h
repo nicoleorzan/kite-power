@@ -16,8 +16,8 @@
 #define n_thetas_vel 13
 
 #define Gamma 0.9999999999
-#define learning_episodes 2000
-#define max_steps 2000000
+#define learning_episodes 3000
+#define max_steps 1000000
 
 #define s_alpha0 10
 
