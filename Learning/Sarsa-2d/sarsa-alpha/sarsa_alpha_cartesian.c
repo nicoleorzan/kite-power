@@ -151,6 +151,7 @@ int main(int argc, char *argv[]){
                             &theta, &vtheta, s_alpha, W, &lift, &drag, &T, &F_attr, it, &sector);
 
             r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1]);
+
             rk[0] = r_block[0] + (rk[0] - r_block[0])/fabs(r_diff_modulo)*R;
             rk[1] = r_block[1] + (rk[1] - r_block[1])/fabs(r_diff_modulo)*R;
 
@@ -226,7 +227,6 @@ int main(int argc, char *argv[]){
                 // MOVE ON: S = S1, A = A1
 
                 s_alpha = s_alpha1;
-
                 a_alpha = a_alpha1;
                 
             }
@@ -266,8 +266,6 @@ int main(int argc, char *argv[]){
     fclose(Q_mat);
     fclose(Q_mat_count);
     fclose(policy);
-    
-    //remove("a.out");
 
     return 0;
 

@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
     Q_mat_count = fopen("cQ_count.txt", "w");
     policy = fopen("cpolicy.txt", "w");
     fprintf(rew, "episode,epsilon,Alpha,steps,return\n");
-    fprintf(out, "t         x_kite          z_kite         x_blocco          z_blocco          wind_x       wind_y       v_blocco_x\n");
+    fprintf(out, "t         x_kite          z_kite         r_block          z_blocco          wind_x       wind_y       v_blocco_x\n");
     fprintf(Q_mat, "episode,alpha_idx,theta,vtheta,action_0,action_1,action_2\n");
     fprintf(policy, "step        alpha       action      reward        Q[s+0]      Q[s+1]      Q[s+2]\n");
     
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]){
     double *vk = (double*) malloc(dim * sizeof(double)); 
     double *ak = (double*) malloc(dim * sizeof(double)); 
 
-    // vettori moto block dall'origine fissa (x, z)
+    // vettori moto blocco dall'origine fissa (x, z)
     double *r_block = (double*) malloc(dim * sizeof(double)); 
     double *v_block = (double*) malloc(dim * sizeof(double));
     double *a_block = (double*) malloc(dim * sizeof(double)); 

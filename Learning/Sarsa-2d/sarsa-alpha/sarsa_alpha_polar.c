@@ -20,14 +20,14 @@ int main(int argc, char *argv[]){
     // ======== DYNAMICS VARIABLES =======
 
     // vettori moto kite dall'origine fissa (x, z)
-    double *rk = (double*) malloc(2 * sizeof(double)); 
-    double *vk = (double*) malloc(2 * sizeof(double)); 
-    double *ak = (double*) malloc(2 * sizeof(double)); 
+    double *rk = (double*) malloc(dim * sizeof(double)); 
+    double *vk = (double*) malloc(dim * sizeof(double)); 
+    double *ak = (double*) malloc(dim * sizeof(double)); 
 
     // vettori moto block dall'origine fissa (x, z)
-    double *r_block = (double*) malloc(2 * sizeof(double)); 
-    double *v_block = (double*) malloc(2 * sizeof(double));
-    double *a_block = (double*) malloc(2 * sizeof(double));  
+    double *r_block = (double*) malloc(dim * sizeof(double)); 
+    double *v_block = (double*) malloc(dim * sizeof(double));
+    double *a_block = (double*) malloc(dim * sizeof(double));  
     
     // theta, dtheta, ddtheta
     double *theta = (double*) malloc(3 * sizeof(double));  
@@ -95,8 +95,12 @@ int main(int argc, char *argv[]){
         // ======================= EPISODE INITIALIZATION ==========================
 
         printf("Episode: %d\nepsilon: %f\n", episode, epsilon);
+        printf("Learning rate: %f\n", Alpha);
 
-        variables_initialization(rk, vk, ak, theta0, vtheta0, r_block, v_block, a_block, theta);
+        theta[0] = theta0;
+        theta[1] = vtheta0;
+
+        variables_initialization(rk, vk, ak, theta[0], theta[1], r_block, v_block, a_block, theta);
 
         streamfunction2d(rk, W);
 
@@ -108,6 +112,7 @@ int main(int argc, char *argv[]){
         tot_reward = 0.; 
 
         printf("theta0 = %f, vel_theta0 = %f\n", theta[0], theta[1]);
+        printf("initial alpha state=%d\n", s_alpha);
         printf("W[0]=%f\n", W[0]);
         printf("W[1]=%f\n", W[1]);
 
@@ -122,7 +127,7 @@ int main(int argc, char *argv[]){
                 fprintf(policy, "%d      %f     %d     %f     %f     %f     %f\n", \
                 it, alphas[s_alpha], a_alpha, reward, Q[s_alpha*n_actions + 0], \
                 Q[s_alpha*n_actions + 1], Q[s_alpha*n_actions + 2]);
-            }   
+            }
 
             if (it > max_steps){
                 printf("MAX STEPS, %d, exiting\n", max_steps);
@@ -233,12 +238,13 @@ int main(int argc, char *argv[]){
     free(rk);
     free(vk);
     free(ak);
-    free(Q);
-    free(Q_count);
 
     free(r_block);
     free(v_block);
     free(a_block);
+
+    free(Q);
+    free(Q_count);
 
     free(theta);
 
@@ -247,8 +253,6 @@ int main(int argc, char *argv[]){
     fclose(Q_mat);
     fclose(Q_mat_count);
     fclose(policy);
-    
-    remove("a.out");
 
     return 0;
 

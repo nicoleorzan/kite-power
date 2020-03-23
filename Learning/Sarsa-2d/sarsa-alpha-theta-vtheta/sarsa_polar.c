@@ -27,14 +27,14 @@ int main(int argc, char *argv[]){
     // ======== DYNAMICS VARIABLES =======
 
     // vettori moto kite dall'origine fissa (x, z)
-    double *rk = (double*) malloc(2 * sizeof(double)); 
-    double *vk = (double*) malloc(2 * sizeof(double)); 
-    double *ak = (double*) malloc(2 * sizeof(double)); 
+    double *rk = (double*) malloc(dim * sizeof(double)); 
+    double *vk = (double*) malloc(dim * sizeof(double)); 
+    double *ak = (double*) malloc(dim * sizeof(double)); 
 
     // vettori moto blocco dall'origine fissa (x, z)
-    double *r_block = (double*) malloc(2 * sizeof(double)); 
-    double *v_block = (double*) malloc(2 * sizeof(double));
-    double *a_block = (double*) malloc(2 * sizeof(double));  
+    double *r_block = (double*) malloc(dim * sizeof(double)); 
+    double *v_block = (double*) malloc(dim * sizeof(double));
+    double *a_block = (double*) malloc(dim * sizeof(double));  
     
     // theta, dtheta, ddtheta
     double *theta = (double*) malloc(3 * sizeof(double)); 
