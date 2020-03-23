@@ -20,8 +20,9 @@ int main(int argc, char *argv[]){
     Q_mat_count = fopen("pQ_count.txt", "w");
     policy = fopen("ppolicy.txt", "w");
     fprintf(rew, "episode,epsilon,Alpha,steps,return\n");
-    fprintf(out, "t         x_kite          z_kite         r_block          z_blocco          wind_x       wind_y       v_blocco_x\n");
+    fprintf(out, "t         x_kite          z_kite         x_block          z_block          wind_x       wind_y       v_blocco_x\n");
     fprintf(Q_mat, "episode,alpha_idx,theta,vtheta,action_0,action_1,action_2\n");
+    fprintf(Q_mat_count, "episode,alpha_idx,theta,vtheta,action_0,action_1,action_2\n");
     fprintf(policy, "step        alpha       action      reward        Q[s+0]      Q[s+1]      Q[s+2]\n");
     
     // ======== DYNAMICS VARIABLES =======
@@ -84,12 +85,12 @@ int main(int argc, char *argv[]){
         /*if (episode == (int)(learning_episodes/4)){
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
-        }*/
+        }
         if (episode == (int)(learning_episodes/2)){
             epsilon = epsilon + 0.05;
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
-        }
+        }*/
         if (episode == (int)(learning_episodes*3/4)){
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
@@ -150,7 +151,7 @@ int main(int argc, char *argv[]){
 
                 if ( episode%save_matrix_step == 0){
                     fill_Q_mat(Q_mat, Q, episode);
-                    fill_Q_count(Q_mat_count, Q_count);
+                    fill_Q_count(Q_mat_count, Q_count, episode);
                 }
 
                 break;
@@ -199,7 +200,7 @@ int main(int argc, char *argv[]){
 
                 if ( episode%save_matrix_step == 0){
                     fill_Q_mat(Q_mat, Q, episode);
-                    fill_Q_count(Q_mat_count, Q_count);
+                    fill_Q_count(Q_mat_count, Q_count, episode);
                 }
                 break;
             }

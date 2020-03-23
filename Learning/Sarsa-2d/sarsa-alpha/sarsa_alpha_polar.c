@@ -15,6 +15,7 @@ int main(int argc, char *argv[]){
     fprintf(rew, "episode,epsilon,Alpha,steps,return\n");
     fprintf(out, "t         x_kite          z_kite         x_block          z_block          wind_x       wind_y       v_block_x\n");
     fprintf(Q_mat, "episode,alpha_idx,action_0,action_1,action_2\n");
+    fprintf(Q_mat_count, "episode,alpha_idx,action_0,action_1,action_2\n");
     fprintf(policy, "step        alpha       action      reward        Q[s+0]      Q[s+1]      Q[s+2]\n");
 
     // ======== DYNAMICS VARIABLES =======
@@ -74,14 +75,14 @@ int main(int argc, char *argv[]){
 
     while (episode < learning_episodes){
 
-        if (episode == (int)(learning_episodes/5)){
+        /*if (episode == (int)(learning_episodes/5)){
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
         }
         if (episode == (int)(learning_episodes*2/5)){
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
-        }
+        }*/
         if (episode == (int)(learning_episodes*3/5)){
             epsilon = epsilon + 0.05;
             Alpha = Alpha*0.1;
@@ -94,6 +95,7 @@ int main(int argc, char *argv[]){
     
         // ======================= EPISODE INITIALIZATION ==========================
 
+        printf("Polar code\n");
         printf("Episode: %d\nepsilon: %f\n", episode, epsilon);
         printf("Learning rate: %f\n", Alpha);
 
@@ -136,7 +138,7 @@ int main(int argc, char *argv[]){
                 fprintf(rew, "%d,%f,%f,%d,%f\n", episode, epsilon, Alpha, it, tot_reward);
 
                 fill_Q_mat(Q_mat, Q, episode);
-                fill_Q_count(Q_mat_count, Q_count);
+                fill_Q_count(Q_mat_count, Q_count, episode);
 
                 break;
             }
@@ -185,7 +187,7 @@ int main(int argc, char *argv[]){
                 Q_count[s_alpha*n_actions + a_alpha] += 1;
 
                 fill_Q_mat(Q_mat, Q, episode);
-                fill_Q_count(Q_mat_count, Q_count);
+                fill_Q_count(Q_mat_count, Q_count, episode);
 
                 break;
             }
