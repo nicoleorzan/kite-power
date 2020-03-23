@@ -61,12 +61,15 @@ void variables_initialization(double *rk, double *vk, double *ak,
 
     r_diff[0] = rk[0] - r_block[0];
     r_diff[1] = rk[1] - r_block[1];
+    r_diff[2] = rk[2] - r_block[2];
 
     v_diff[0] = vk[0] - v_block[0];
     v_diff[1] = vk[1] - v_block[1];
+    v_diff[2] = vk[2] - v_block[2];
 
     a_diff[0] = ak[0] - a_block[0];
     a_diff[1] = ak[1] - a_block[1];
+    a_diff[2] = ak[2] - a_block[2];
 }
 
 void integration_trajectory(double * rk, double * vk, double * ak, // Kite variables
@@ -164,22 +167,22 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         // |Mg| > |Tz|
 
         denom1 = R*(m+m_block)/(m*m_block)
-            + cos(*theta)/m_block*(coeff_friction*(cos(*phi)*r_diff[0] + sin(*phi)*r_diff[1]) - r_diff[2]);
+            - cos(*theta)/m_block*( r_diff[2] - coeff_friction*(cos(*phi)*r_diff[0] + sin(*phi)*r_diff[1]));
 
         T1 = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1] + F_aer[2]*r_diff[2])/m
         + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1] + v_diff[2]*v_diff[2])
-        + g*(coeff_friction*(cos(*phi)*r_diff[0] + sin(*phi)*r_diff[1]) - r_diff[2]);
+        - g*(r_diff[2] - coeff_friction*(cos(*phi)*r_diff[0] + sin(*phi)*r_diff[1]));
 
         T1 = T1/denom1;
 
         // |Mg| < |Tz|
 
         denom2 = R*(m+m_block)/(m*m_block)
-            - cos(*theta)/m_block*(coeff_friction*(cos(*phi)*r_diff[0] + sin(*phi)*r_diff[1]) + r_diff[2]);
+            - cos(*theta)/m_block*( r_diff[2] + coeff_friction*(cos(*phi)*r_diff[0] + sin(*phi)*r_diff[1]));
 
         T2 = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1] + F_aer[2]*r_diff[2])/m
         + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1] + v_diff[2]*v_diff[2])
-        - g*(coeff_friction*(cos(*phi)*r_diff[0] + sin(*phi)*r_diff[1]) + r_diff[2]);
+        - g*(r_diff[2] + coeff_friction*(cos(*phi)*r_diff[0] + sin(*phi)*r_diff[1]));
 
         T2 = T2/denom2;
 
@@ -242,23 +245,23 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
         v_block_mod = sqrt(v_block[0]*v_block[0] + v_block[1]*v_block[1]);
 
-        denom1 = R*(m+m_block)/(m*m_block) + cos(*theta)/m_block*(-r_diff[2] + 
-        coeff_friction/v_block_mod*(v_block[0]*r_diff[0] + v_block[1]*r_diff[1]) );
+        denom1 = R*(m+m_block)/(m*m_block) - cos(*theta)/m_block*(r_diff[2] - 
+            coeff_friction/v_block_mod*(v_block[0]*r_diff[0] + v_block[1]*r_diff[1]) );
 
         T1 = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1] + F_aer[2]*r_diff[2])/m
-        + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1] + v_diff[2]*v_diff[2])
-        + g*(-r_diff[2] + coeff_friction/v_block_mod*(v_block[0]*r_diff[0] + v_block[1]*r_diff[1]) );
+            + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1] + v_diff[2]*v_diff[2])
+            - g*(r_diff[2] - coeff_friction/v_block_mod*(v_block[0]*r_diff[0] + v_block[1]*r_diff[1]) );
 
         T1 = T1/denom1;
 
         // |Mg| < |Tz|
 
         denom2 = R*(m+m_block)/(m*m_block) - cos(*theta)/m_block*(r_diff[2] + 
-        coeff_friction/v_block_mod*(v_block[0]*r_diff[0] + v_block[1]*r_diff[1]) );
+            coeff_friction/v_block_mod*(v_block[0]*r_diff[0] + v_block[1]*r_diff[1]) );
 
         T2 = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1] + F_aer[2]*r_diff[2])/m
-        + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1] + v_diff[2]*v_diff[2])
-        - g*(r_diff[2] + coeff_friction/v_block_mod*(v_block[0]*r_diff[0] + v_block[1]*r_diff[1]) );
+            + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1] + v_diff[2]*v_diff[2])
+            - g*(r_diff[2] + coeff_friction/v_block_mod*(v_block[0]*r_diff[0] + v_block[1]*r_diff[1]) );
 
         T2 = T2/denom2;
 
@@ -285,6 +288,8 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         a_block[1] = ( Tension[1] + F_friction[1] )/m_block;
 
     }
+
+    a_block[2] = 0;
 
     v_block[0] = v_block[0] + h*a_block[0]; 
     v_block[1] = v_block[1] + h*a_block[1];

@@ -15,7 +15,7 @@ double Va_mod;
 double va[2];
 double L[2];
 double D[2];
-double beta;
+double F_aer[2];
 double Fg[2] = {0, -m*g};
 double F_friction;
 double N;
@@ -23,9 +23,8 @@ double T1, denom1;
 double T2, denom2;
 double Tension[2], denom;
 double Ftot[2]; 
-double num;
 
-double F_aer[2];
+double beta;
 
 void variables_initialization(double *rk, double *vk, double *ak,
                              double theta, double dtheta,
@@ -181,8 +180,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
             *F_attr = F_friction;
 
             a_block[0] = ( Tension[0] + F_friction )/m_block;
-        }
-        
+        }   
     }
 
     // ========================== CASE 2) BLOCK MOVING (|v| >= 10E-6) ===> Fmu = -mu*|N|*vx/|vx| =====================
