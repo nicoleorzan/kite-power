@@ -6,6 +6,13 @@ double reward_dt = h*decision_time;
 
 int main(int argc, char *argv[]){
 
+    if (num_saved_matrices > learning_episodes){
+        printf("===> Error: check save matrix step\n");
+        return 1;
+    }
+
+    int save_matrix_step = (int)learning_episodes/num_saved_matrices;
+
     FILE *out ,*rew, *Q_mat, *Q_mat_count, *policy;
     out = fopen("pout_streamfunction.txt", "w");
     rew = fopen("prewards_streamfunction.txt", "w");
@@ -16,7 +23,7 @@ int main(int argc, char *argv[]){
     fprintf(out, "t         x_kite          z_kite         x_block          z_block          wind_x       wind_y       v_block_x\n");
     fprintf(Q_mat, "episode,alpha_idx,action_0,action_1,action_2\n");
     fprintf(Q_mat_count, "episode,alpha_idx,action_0,action_1,action_2\n");
-    fprintf(policy, "step        alpha       action      reward        Q[s+0]      Q[s+1]      Q[s+2]\n");
+    fprintf(policy, "step,alpha,action,reward,Q[s+0],Q[s+1],Q[s+2]\n");
 
     // ======== DYNAMICS VARIABLES =======
 
@@ -126,7 +133,7 @@ int main(int argc, char *argv[]){
         while (rk[1] > 0){
 
             if (episode == learning_episodes - 1 && it%decision_time == 0){
-                fprintf(policy, "%d      %f     %d     %f     %f     %f     %f\n", \
+                fprintf(policy, "%d,%f,%d,%f,%f,%f,%f\n", \
                 it, alphas[s_alpha], a_alpha, reward, Q[s_alpha*n_actions + 0], \
                 Q[s_alpha*n_actions + 1], Q[s_alpha*n_actions + 2]);
             }
@@ -137,8 +144,12 @@ int main(int argc, char *argv[]){
 
                 fprintf(rew, "%d,%f,%f,%d,%f\n", episode, epsilon, Alpha, it, tot_reward);
 
-                fill_Q_mat(Q_mat, Q, episode);
-                fill_Q_count(Q_mat_count, Q_count, episode);
+                if ( episode%save_matrix_step == 0){
+                    fill_Q_mat(Q_mat, Q, episode);
+                }
+                if (episode == learning_episodes-1){
+                    fill_Q_count(Q_mat_count, Q_count, episode);
+                }
 
                 break;
             }
@@ -186,8 +197,12 @@ int main(int argc, char *argv[]){
 
                 Q_count[s_alpha*n_actions + a_alpha] += 1;
 
-                fill_Q_mat(Q_mat, Q, episode);
-                fill_Q_count(Q_mat_count, Q_count, episode);
+                if ( episode%save_matrix_step == 0){
+                    fill_Q_mat(Q_mat, Q, episode);
+                }
+                if (episode == learning_episodes-1){
+                    fill_Q_count(Q_mat_count, Q_count, episode);
+                }
 
                 break;
             }
