@@ -2,16 +2,16 @@
 #include "../../../Dynamics/winds.h"
 #include "sarsa_alpha_theta_vtheta.h"
 
-#define decision_time 1000
-
 double reward_dt = h*decision_time;
 
 int main(int argc, char *argv[]){
 
-    if (save_matrix_step > learning_episodes){
+    if (num_saved_matrices > learning_episodes){
         printf("===> Error: check save matrix step\n");
         return 1;
     }
+
+    int save_matrix_step = (int)learning_episodes/num_saved_matrices;
 
     FILE *out ,*rew, *Q_mat, *Q_mat_count, *policy;
     out = fopen("pout.txt", "w");
@@ -23,7 +23,7 @@ int main(int argc, char *argv[]){
     fprintf(out, "t         x_kite          z_kite         x_block          z_block          wind_x       wind_y       v_blocco_x\n");
     fprintf(Q_mat, "episode,alpha_idx,theta,vtheta,action_0,action_1,action_2\n");
     fprintf(Q_mat_count, "episode,alpha_idx,theta,vtheta,action_0,action_1,action_2\n");
-    fprintf(policy, "step        alpha       action      reward        Q[s+0]      Q[s+1]      Q[s+2]\n");
+    fprintf(policy, "step,alpha,action,reward,Q[s+0],Q[s+1],Q[s+2]\n");
     
     // ======== DYNAMICS VARIABLES =======
 
@@ -131,7 +131,7 @@ int main(int argc, char *argv[]){
         while (rk[1] > 0){
 
             if (episode == learning_episodes - 1 && it%decision_time == 0){
-                fprintf(policy, "%d      %f     %d     %f     %f     %f     %f\n", \
+                fprintf(policy, "%d,%f,%d,%f,%f,%f,%f\n", \
                 it, alphas[s_alpha], a_alpha, reward, 
                 Q[s_alpha*n_actions*n_thetas*n_thetas_vel + 0*n_thetas*n_thetas_vel 
                 + s_theta*n_thetas_vel + s_vtheta],
@@ -151,6 +151,8 @@ int main(int argc, char *argv[]){
 
                 if ( episode%save_matrix_step == 0){
                     fill_Q_mat(Q_mat, Q, episode);
+                }
+                if (episode == learning_episodes-1){
                     fill_Q_count(Q_mat_count, Q_count, episode);
                 }
 
@@ -200,6 +202,8 @@ int main(int argc, char *argv[]){
 
                 if ( episode%save_matrix_step == 0){
                     fill_Q_mat(Q_mat, Q, episode);
+                }
+                if (episode == learning_episodes-1){
                     fill_Q_count(Q_mat_count, Q_count, episode);
                 }
                 break;

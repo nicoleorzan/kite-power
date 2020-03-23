@@ -6,7 +6,7 @@
 
 #define PI 3.1415926535897932384626433
 
-#define save_matrix_step 3
+#define num_saved_matrices 500
 
 #define dim 2
 #define PENALTY -200
@@ -14,6 +14,8 @@
 #define n_actions 3 // 0 diminuisco alpha, 1 rimango, 2 aumento
 #define n_thetas 9
 #define n_thetas_vel 13
+
+#define decision_time 1000
 
 #define Gamma 0.9999999999
 #define learning_episodes 3000
@@ -53,17 +55,25 @@ void fill_Q_mat(FILE *Q_mat_file, double *Q, int episode){
   
 }
 
-void fill_Q_count(FILE *Q_mat_file, int *Q){
+void fill_Q_count(FILE *Q_mat_file, int *Q, int episode){
 
-  for (int i=0; i<n_alphas; i++){
-    for (int j=0; j<n_actions; j++){
-      for (int kk=0; kk<n_thetas; kk++){
-        for (int p=0; p<n_thetas_vel; p++){
-          fprintf(Q_mat_file,"%d ", Q[i*n_actions*n_thetas*n_thetas_vel + j*n_thetas*n_thetas_vel + 
-                                      kk*n_thetas_vel + p]);
+  for (int kk=0; kk<n_thetas; kk++){
+    for (int p=0; p<n_thetas_vel; p++){
+      for (int i=0; i<n_alphas; i++){
+        fprintf(Q_mat_file,"%d,", episode); //print episode
+        fprintf(Q_mat_file,"%d,", i); // print alpha idx
+        fprintf(Q_mat_file,"%f,", thetas[kk]); // print theta
+        fprintf(Q_mat_file,"%f,", thetas_vel[p]); // print vtheta idx
+        for (int j=0; j<n_actions; j++){
+          fprintf(Q_mat_file,"%d", Q[i*n_actions*n_thetas*n_thetas_vel + j*n_thetas*n_thetas_vel + 
+                                    kk*n_thetas_vel + p]);
+          if (j!=n_actions-1){ fprintf(Q_mat_file,","); }
         }
+        fprintf(Q_mat_file,"\n");
       }
+      fprintf(Q_mat_file,"\n");
     }
+    fprintf(Q_mat_file,"\n");
   }
   fprintf(Q_mat_file,"\n");
   
