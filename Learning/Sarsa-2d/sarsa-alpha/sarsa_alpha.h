@@ -6,6 +6,8 @@
 
 #define PI 3.1415926535897932384626433
 
+#define num_saved_matrices 500
+
 #define dim 2
 #define PENALTY -200
 
@@ -14,7 +16,7 @@
 #define decision_time 1000
 
 #define Gamma 0.9999999999
-#define learning_episodes 3000
+#define learning_episodes 40
 #define max_steps 1000000
 
 #define s_alpha0 10
@@ -41,13 +43,17 @@ void fill_Q_mat(FILE *Q_mat_file, double *Q, int episode){
   
 }
 
-void fill_Q_count(FILE *Q_mat_file, int *Q){
+void fill_Q_count(FILE *Q_mat_file, int *Q, int episode){
 
   for (int i=0; i<n_alphas; i++){
+    fprintf(Q_mat_file,"%d,", episode);
+    fprintf(Q_mat_file,"%d,", i);
     for (int j=0; j<n_actions; j++){
-          fprintf(Q_mat_file,"%d ", Q[i*n_actions + j]);
-        }
-      }
+      fprintf(Q_mat_file,"%d", Q[i*n_actions + j]);
+      if (j!=n_actions-1){ fprintf(Q_mat_file,","); }
+    }
+  fprintf(Q_mat_file,"\n");
+  }
   fprintf(Q_mat_file,"\n");
   
 }
