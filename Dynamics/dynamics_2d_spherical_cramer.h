@@ -301,10 +301,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         *F_attr = F_friction;
     }              
 
-    //printf("\ni=%d, beta=%f, Lx = %f\n", it, beta, L[0]);
-    //printf("T[0] = %f, T[1] = %f\n", Tension[0], Tension[1]);
-
-    a_block[1] = 0;
+    //a_block[1] = 0;
 
     v_block[0] = v_block[0] + h*a_block[0];
     v_block[1] = v_block[1] + h*a_block[1];
@@ -320,11 +317,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     ak[0] = a_block[0] - R*cos(theta[0])*theta[1]*theta[1] - R*sin(theta[0])*theta[2];
     ak[1] = -R*sin(theta[0])*theta[1]*theta[1] + R*cos(theta[0])*theta[2];
 
-    prova = v_block[0] - R*sin(theta[0])*theta[1];
-    /*printf("V[0] = %f\n", prova);
-    prova = vk[0] + h*ak[0];
-    printf("V[0] = %f\n\n", prova);*/
-    vk[0] = prova;
+    vk[0] = v_block[0] - R*sin(theta[0])*theta[1];
     vk[1] = R*cos(theta[0])*theta[1];
     
     rk[0] = r_block[0] + R*cos(theta[0]);
@@ -332,8 +325,8 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     // Check: Sum of total forces on kite
 
-    Ftot[0] = L[0] + D[0] + Fg[0] - Tension[0];
-    Ftot[1] = L[1] + D[1] + Fg[1] - Tension[1];
+    //Ftot[0] = L[0] + D[0] + Fg[0] - Tension[0];
+    //Ftot[1] = L[1] + D[1] + Fg[1] - Tension[1];
 
     // Power
 

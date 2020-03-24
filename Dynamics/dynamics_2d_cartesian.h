@@ -254,31 +254,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     // Check: Sum of total forces
 
     Ftot[0] = L[0] + D[0] + Fg[0] + Tension[0];
-    Ftot[1] = L[1] + D[1] + Fg[1] + Tension[1];
-
-    #ifdef DEBUG
-        printf("N=%f\n", N);
-        printf("Vw[0]= %f, Vw[1]=%f\n", W[0], W[1]);
-        printf("Vkx=%f, Vky=%f\n", vk[0], vk[1]); 
-        printf("Va_mod=%f, va[0]=%f, va[1]=%f\n", Va_mod, va[0], va[1]); 
-        printf("L[0]=%f\n", L[0]); 
-        printf("L[1]=%f\n", L[1]); 
-        printf("D[0]=%f\n", D[0]); 
-        printf("D[1]=%f\n", D[1]); 
-        printf("Fg[0]=%f\n", Fg[0]); 
-        printf("Fg[1]=%f\n", Fg[1]);
-        printf("Tx=%f, Ty=%f\n", Tension[0], Tension[1]);
-        printf("*theta = %f\n", *theta);
-        printf("a_block[0] = %f, a_block[1] = %f\n", a_block[0], a_block[1]);
-        printf("v_block[0] = %f, v_block[1] = %f\n", v_block[0], v_block[1]);
-        printf("r_block[0] = %f, r_block[1] = %f\n", r_block[0], r_block[1]);
-        printf("rk[0]= %f, rk[1]=%f\n", rk[0], rk[1]);
-        printf("vk[0]= %f, vk[1]=%f\n", vk[0], vk[1]);
-        printf("ak[0]= %f, ak[1]=%f\n", ak[0], ak[1]);
-        printf("forze totali x:%f\n", Ftot[0]);
-        printf("forze totali y:%f\n", Ftot[1]);
-        printf("\n");
-    #endif    
+    Ftot[1] = L[1] + D[1] + Fg[1] + Tension[1];   
 
 }
 

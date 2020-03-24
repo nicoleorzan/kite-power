@@ -6,14 +6,14 @@
 
 #define dim 2
 
-// ============== FILE INPUT: ATTACK ANGLE AND WIND COEFF AND IF TRAJECTORY IS NEEDED ============
+// ============== FILE INPUT: ATTACK ANGLE AND WIND X, Z ============
 
 int main(int argc, char *argv[]){
 
     // ========================= READING INPUT VARIABLES ==========================
 
-    if (argc <= 4){
-        printf("Missing inputs!!! Need ATTACK ANGLE INDEX, WIND X, WIND Y and 1 IF TRAJECTORY FILE IS NEEDED\n");
+    if (argc <= 3){
+        printf("Missing inputs!!! Need ATTACK ANGLE INDEX, WIND X, WIND Y\n");
         return 0;
     }
 
@@ -23,10 +23,6 @@ int main(int argc, char *argv[]){
     W[0] = atof( *(argv + 2) );
     W[1] = atof( *(argv + 3) );
 
-    //double wind_coeff = 0;
-
-    bool file_needed = atof( *(argv + 4) );
-
     if (alpha_index >= n_alphas){
         printf("Alpha index too big!!!\n");
         return 0;
@@ -34,7 +30,7 @@ int main(int argc, char *argv[]){
 
     // ========================= CREATING TRAJECTORY OUTPUT FILE ==========================
 
-    char text[30];
+    /*char text[30];
     time_t now = time(NULL);
     struct tm tim;
     tim = *(localtime(&now));
@@ -48,12 +44,12 @@ int main(int argc, char *argv[]){
         strcat(filename_trajectory,"trajectory-");
         strcat(filename_trajectory,text);
         strcat(filename_trajectory,".txt");
-    }
+    }*/
 
-    FILE *trajectory, *wind;
+    FILE *trajectory;
     trajectory = fopen("outc.txt", "w+"); // fopen(filename_trajectory, "w+");
 
-    fprintf(trajectory, "t      x_kite      z_kite      x_block      z_block      v_block    Tension\n");
+    fprintf(trajectory, "t,x_kite,z_kite,x_block,z_block,theta,vtheta,windx,windy,v_block,Tension\n");
 
     // ============================ VARIABLES DEFINITION ============================
 
@@ -74,21 +70,22 @@ int main(int argc, char *argv[]){
     double theta = theta0;
     double vtheta = vtheta0;
 
-    double r_diff_modulo;
+    double r_diff_modulo = 0;
 
-    double lift=0, drag=0;
+    double lift = 0;
+    double drag = 0;
     double T = 0;
     int sector = 0;
-    double F_vinc;
-    double F_attr;
-    double theta_star;
+    double F_vinc = 0;
+    double F_attr = 0;
+    double theta_star = 0;
     int stability = 0;
     int decollato = 0;
-    double dtheta;
+    double dtheta = 0;
 
     variables_initialization(rk, vk, ak, theta, vtheta, r_block, v_block, a_block, r_diff, v_diff, a_diff);
 
-    //streamfunction2d(rk, W);
+    streamfunction2d(rk, W);
 
     int t = 0;   
 
@@ -99,12 +96,10 @@ int main(int argc, char *argv[]){
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
                             &theta, &vtheta, alpha_index, W, &lift, &drag, &T, &F_attr, i, &sector);
 
-        //streamfunction2d(rk, W);
-
-        //printf("T=%f, Fattr=%f, sector=%d\n", T, F_attr, sector);
+        streamfunction2d(rk, W);
 
         r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1]);
-        theta_star = atan((lift - m*g)/drag); // e` giusto calcolarlo ad ogni step??
+        theta_star = atan((lift - m*g)/drag);
         F_vinc = m_block*g - T*sin(theta);
 
         // moving the kite to put it again at distance R with the block
@@ -113,10 +108,10 @@ int main(int argc, char *argv[]){
         rk[1] = r_block[1] + (rk[1] - r_block[1])/fabs(r_diff_modulo)*R;
 
         if (i%PRINTSTEP == 0 || rk[1] <= 0.){
-            fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f\n", \
-                    t, rk[0], rk[1], r_block[0], r_block[1], v_block[0], T);
+            fprintf(trajectory, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", \
+                    t, rk[0], rk[1], r_block[0], r_block[1], theta, vtheta, W[0], W[1], v_block[0], T);
             if (rk[1] <=0. ){
-                //printf("Kite Fall, steps %d, z<0, break\n", i);
+                printf("Kite Fall, steps %d, z<0, break\n", i);
                 break;
             }
         }
@@ -126,12 +121,9 @@ int main(int argc, char *argv[]){
         if (F_vinc < 0) {
             decollato = 1;
         }
-
     }
 
     theta_star = atan((lift - m*g)/drag);
-
-    stability = 0; // 0 = stability not reached
 
     if (theta != 0. && abs(theta - theta_star) < THRESHOLD && dtheta < THRESHOLD){
         stability = 1;
@@ -166,10 +158,6 @@ int main(int argc, char *argv[]){
     free(a_block);
 
     fclose(trajectory);
-    if (file_needed == 0){
-        remove(filename_trajectory);
-    }
-    //remove("a.out");
 
     return 0;
 
