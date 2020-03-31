@@ -14,11 +14,19 @@ int main(int argc, char *argv[]){
     int save_matrix_step = (int)learning_episodes/num_saved_matrices;
 
     FILE *out ,*rew, *Q_mat, *Q_mat_count, *policy;
+<<<<<<< HEAD
     out = fopen("cout.txt", "w");
     rew = fopen("crewards.txt", "w");
     Q_mat = fopen("cQ_matrix.txt", "w");
     Q_mat_count = fopen("cQ_counter.txt", "w");
     policy = fopen("cpolicy.txt", "w");
+=======
+    out = fopen("trial_cout_streamfunction.txt", "w");
+    rew = fopen("trial_crewards_streamfunction.txt", "w");
+    Q_mat = fopen("trial_cQ_matrix_streamfunction.txt", "w");
+    Q_mat_count = fopen("trial_cQ_counter_streamfunction.txt", "w");
+    policy = fopen("trial_cpolicy_streamfunction.txt", "w");
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
     fprintf(rew, "episode,epsilon,Alpha,steps,return\n");
     fprintf(out, "t,x_kite,z_kite,x_block,z_block,theta,vtheta,windx,windy,v_block,Tension\n");
     fprintf(Q_mat, "episode,alpha_idx,action_0,action_1,action_2\n");
@@ -90,12 +98,29 @@ int main(int argc, char *argv[]){
 
     while (episode < learning_episodes){
 
+<<<<<<< HEAD
         if (episode == (int)(learning_episodes/2)){
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
         }
         if (episode == (int)(learning_episodes*3/4)){
             epsilon += 0.05;
+=======
+        /*if (episode == (int)(learning_episodes/5)){
+            Alpha = Alpha*0.1;
+            printf("Decreasing learning rate: %f\n", Alpha);
+        }
+        if (episode == (int)(learning_episodes*2/5)){
+            Alpha = Alpha*0.1;
+            printf("Decreasing learning rate: %f\n", Alpha);
+        }*/
+        if (episode == (int)(learning_episodes*3/5)){
+            epsilon = epsilon + 0.05;
+            Alpha = Alpha*0.1;
+            printf("Decreasing learning rate: %f\n", Alpha);
+        }
+        if (episode == (int)(learning_episodes*5.4)){
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
         }
@@ -133,7 +158,11 @@ int main(int argc, char *argv[]){
         while (rk[1] > 0){
 
             if (episode == learning_episodes - 1 && it%decision_time == 0){
+<<<<<<< HEAD
                 fprintf(policy, "%d,%f,%d,%f,%f,%f,%f\n", \
+=======
+                fprintf(policy,"%d,%f,%d,%f,%f,%f,%f\n", \
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
                 it, alphas[s_alpha], a_alpha, reward, Q[s_alpha*n_actions + 0], \
                 Q[s_alpha*n_actions + 1], Q[s_alpha*n_actions + 2]);
             }   
@@ -253,7 +282,7 @@ int main(int argc, char *argv[]){
     print_mat(Q);
 
     printf("save matrix\n");
-    save_matrix(Q, "cQ_matrix.dat");
+    save_matrix(Q, "trial_cQ_matrix.dat");
     //printf("load matrix\n");
     //load_matrix(Q2, "Q_matrix.dat");
     //print_mat(Q2);

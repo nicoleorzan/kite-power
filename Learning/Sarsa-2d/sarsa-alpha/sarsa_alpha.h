@@ -7,7 +7,10 @@
 #define PI 3.1415926535897932384626433
 
 #define num_saved_matrices 500
+<<<<<<< HEAD
 #define learning_episodes 20000
+=======
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
 
 #define dim 2
 #define PENALTY -300
@@ -17,7 +20,12 @@
 #define decision_time 1000
 
 #define Gamma 0.9999999999
+<<<<<<< HEAD
 #define max_steps 2000000
+=======
+#define learning_episodes 40
+#define max_steps 1000000
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
 
 #define s_alpha0 10
 

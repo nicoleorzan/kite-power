@@ -84,12 +84,29 @@ int main(int argc, char *argv[]){
 
     while (episode < learning_episodes){
 
+<<<<<<< HEAD
         if (episode == (int)(learning_episodes/2)){
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
         }
         if (episode == (int)(learning_episodes*3/4)){
             epsilon += 0.05;
+=======
+        /*if (episode == (int)(learning_episodes/5)){
+            Alpha = Alpha*0.1;
+            printf("Decreasing learning rate: %f\n", Alpha);
+        }
+        if (episode == (int)(learning_episodes*2/5)){
+            Alpha = Alpha*0.1;
+            printf("Decreasing learning rate: %f\n", Alpha);
+        }*/
+        if (episode == (int)(learning_episodes*3/5)){
+            epsilon = epsilon + 0.05;
+            Alpha = Alpha*0.1;
+            printf("Decreasing learning rate: %f\n", Alpha);
+        }
+        if (episode == (int)(learning_episodes*5.4)){
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
         }
@@ -198,7 +215,11 @@ int main(int argc, char *argv[]){
                 if (episode == learning_episodes-1){
                     fill_Q_count(Q_mat_count, Q_count, episode);
                 }
+<<<<<<< HEAD
                 
+=======
+
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
                 break;
             }
 
