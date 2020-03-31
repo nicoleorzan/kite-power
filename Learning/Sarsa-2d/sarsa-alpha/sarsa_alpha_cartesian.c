@@ -15,17 +15,23 @@ int main(int argc, char *argv[]){
 
     FILE *out ,*rew, *Q_mat, *Q_mat_count, *policy;
 <<<<<<< HEAD
+<<<<<<< HEAD
     out = fopen("cout.txt", "w");
     rew = fopen("crewards.txt", "w");
     Q_mat = fopen("cQ_matrix.txt", "w");
     Q_mat_count = fopen("cQ_counter.txt", "w");
     policy = fopen("cpolicy.txt", "w");
 =======
+=======
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
     out = fopen("trial_cout_streamfunction.txt", "w");
     rew = fopen("trial_crewards_streamfunction.txt", "w");
     Q_mat = fopen("trial_cQ_matrix_streamfunction.txt", "w");
     Q_mat_count = fopen("trial_cQ_counter_streamfunction.txt", "w");
     policy = fopen("trial_cpolicy_streamfunction.txt", "w");
+<<<<<<< HEAD
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
+=======
 >>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
     fprintf(rew, "episode,epsilon,Alpha,steps,return\n");
     fprintf(out, "t,x_kite,z_kite,x_block,z_block,theta,vtheta,windx,windy,v_block,Tension\n");
@@ -99,7 +105,11 @@ int main(int argc, char *argv[]){
     while (episode < learning_episodes){
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         if (episode == (int)(learning_episodes/2)){
+=======
+        /*if (episode == (int)(learning_episodes/5)){
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
         }
@@ -109,10 +119,13 @@ int main(int argc, char *argv[]){
         /*if (episode == (int)(learning_episodes/5)){
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
+<<<<<<< HEAD
         }
         if (episode == (int)(learning_episodes*2/5)){
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
+=======
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
         }*/
         if (episode == (int)(learning_episodes*3/5)){
             epsilon = epsilon + 0.05;
@@ -159,7 +172,11 @@ int main(int argc, char *argv[]){
 
             if (episode == learning_episodes - 1 && it%decision_time == 0){
 <<<<<<< HEAD
+<<<<<<< HEAD
                 fprintf(policy, "%d,%f,%d,%f,%f,%f,%f\n", \
+=======
+                fprintf(policy,"%d,%f,%d,%f,%f,%f,%f\n", \
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
 =======
                 fprintf(policy,"%d,%f,%d,%f,%f,%f,%f\n", \
 >>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4

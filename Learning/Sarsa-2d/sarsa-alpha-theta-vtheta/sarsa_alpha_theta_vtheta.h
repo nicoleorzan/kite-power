@@ -20,7 +20,12 @@
 
 #define Gamma 0.9999999999
 <<<<<<< HEAD
+<<<<<<< HEAD
 #define max_steps 2000000
+=======
+#define learning_episodes 3000
+#define max_steps 1000000
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
 =======
 #define learning_episodes 3000
 #define max_steps 1000000

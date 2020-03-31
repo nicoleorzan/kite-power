@@ -21,6 +21,7 @@ int main(int argc, char *argv[]){
     policy = fopen("cpolicy.txt", "w");
     fprintf(rew, "episode,epsilon,Alpha,steps,return\n");
 <<<<<<< HEAD
+<<<<<<< HEAD
     fprintf(out, "t,x_kite,z_kite,x_block,z_block,theta,vtheta,windx,windy,v_block,Tension\n");
     fprintf(Q_mat, "episode,alpha_idx,theta,vtheta,action_0,action_1,action_2\n");
     fprintf(Q_mat_count, "episode,alpha_idx,theta,vtheta,action_0,action_1,action_2\n");
@@ -28,6 +29,10 @@ int main(int argc, char *argv[]){
 =======
     fprintf(out, "t         x_kite          z_kite         x_block          z_block          wind_x       wind_y       v_blocco_x\n");
     fprintf(Q_mat, "episode,alpha_idx,theta,vtheta,action_0,action_1,action_2\n");
+=======
+    fprintf(out, "t         x_kite          z_kite         x_block          z_block          wind_x       wind_y       v_blocco_x\n");
+    fprintf(Q_mat, "episode,alpha_idx,theta,vtheta,action_0,action_1,action_2\n");
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
     fprintf(Q_mat_count, "episode,alpha_idx,action_0,action_1,action_2\n");
     fprintf(policy, "step        alpha       action      reward        Q[s+0]      Q[s+1]      Q[s+2]\n");
 >>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
@@ -96,7 +101,10 @@ int main(int argc, char *argv[]){
     while (episode < learning_episodes){
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
         /*if (episode == (int)(learning_episodes/4)){
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
@@ -168,8 +176,11 @@ int main(int argc, char *argv[]){
                 if ( episode%save_matrix_step == 0){
                     fill_Q_mat(Q_mat, Q, episode);
 <<<<<<< HEAD
+<<<<<<< HEAD
                 }
                 if (episode == learning_episodes-1){
+=======
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
 =======
 >>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
                     fill_Q_count(Q_mat_count, Q_count, episode);
@@ -227,8 +238,11 @@ int main(int argc, char *argv[]){
                 if ( episode%save_matrix_step == 0){
                     fill_Q_mat(Q_mat, Q, episode);
 <<<<<<< HEAD
+<<<<<<< HEAD
                 }
                 if (episode == learning_episodes-1){
+=======
+>>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
 =======
 >>>>>>> 8a4af4f473d680572248ff2f1a7b5406024ab1e4
                     fill_Q_count(Q_mat_count, Q_count, episode);
