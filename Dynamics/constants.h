@@ -14,6 +14,7 @@
 
 // block
 #define m_block 100.0           // Block mass
+#define coeff_friction 0.4      // Block friction coefficient
 
 /* Paper: Fagiano et al., "High Altitude Wind Energy Generation Using Controlled Power Kites", 2010 */
 #define n_alphas 16
@@ -22,15 +23,15 @@ double CD_alpha[n_alphas] = {0.005, 0.005, 0.001, 0.005, 0.01, 0.02, 0.03, 0.05,
 double alphas[n_alphas] = {-8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 19, 20};
 
 // integration constants
-#define h 0.00001                // Integration dt
-#define STEPS 3000000
-#define PRINTSTEP 100
+#define h 0.0001                // Integration dt
+#define STEPS 3000000 //10 //47092 //38960 //64630 //47090  //47562 //47440
+#define PRINTSTEP 2000
 #define THRESHOLD 10E-5
 
 #define V_THRESHOLD 10E-8
 
 // 2d initial conditions
-#define theta0 0.
-#define vtheta0 1.0
+#define theta0 PI/4.
+#define vtheta0 .0
 
 #endif

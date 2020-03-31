@@ -7,24 +7,22 @@
 #define PI 3.1415926535897932384626433
 
 #define num_saved_matrices 500
+#define learning_episodes 20000
 
 #define dim 2
-#define PENALTY -200
+#define PENALTY -300
 
 #define n_actions 3 // 0 diminuisco alpha, 1 rimango, 2 aumento
 
 #define decision_time 1000
 
 #define Gamma 0.9999999999
-#define learning_episodes 40
-#define max_steps 1000000
+#define max_steps 2000000
 
 #define s_alpha0 10
 
-double Alpha = 0.001; // ordine di grandezza=h/tempo_episodio_in_sec(al minimo caduta)
+double Alpha = 0.01; // ordine di grandezza=h/tempo_episodio_in_sec(al minimo caduta)
 double epsilon = 0.9;
-
-//n_alphas defined in fagiano_model_constant
 
 //#define DEBUGSARSA
 

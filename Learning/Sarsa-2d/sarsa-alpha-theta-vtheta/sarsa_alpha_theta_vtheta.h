@@ -7,19 +7,19 @@
 #define PI 3.1415926535897932384626433
 
 #define num_saved_matrices 500
+#define learning_episodes 20000
 
 #define dim 2
 #define PENALTY -200
 
 #define n_actions 3 // 0 diminuisco alpha, 1 rimango, 2 aumento
-#define n_thetas 9
+#define n_thetas 7
 #define n_thetas_vel 13
 
 #define decision_time 1000
 
 #define Gamma 0.9999999999
-#define learning_episodes 3000
-#define max_steps 1000000
+#define max_steps 2000000
 
 #define s_alpha0 10
 
@@ -28,8 +28,8 @@ double epsilon = 0.9;
 
 //#define DEBUGSARSA
 
-double thetas[n_thetas] = {0., PI/8., PI/4., PI*3/8., PI/2., PI*5/8., PI*3/4, PI*7/8., PI};
-double thetas_vel[n_thetas_vel] = {-50., -20., -10., -5., -2., -1., 0., 1., 2., 5., 10., 20., 50.};
+double thetas[n_thetas] = {0., PI/8., PI/4., PI*3/8., PI/2., PI*3/4, PI};
+double thetas_vel[n_thetas_vel] = {-20., -10., -2., -1.5, -1., -0.5, 0., 0.5, 1., 1.5,  2., 10., 20.};
 
 void fill_Q_mat(FILE *Q_mat_file, double *Q, int episode){
 
@@ -142,7 +142,7 @@ int find_state(double v, double * v_array){
   }
 
   #ifdef DEBUGSARSA
-  //printf("slice = %d\n", slice);
+    printf("slice = %d\n", slice);
   #endif
 
   return slice;

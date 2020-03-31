@@ -14,13 +14,13 @@ int main(int argc, char *argv[]){
     int save_matrix_step = (int)learning_episodes/num_saved_matrices;
 
     FILE *out ,*rew, *Q_mat, *Q_mat_count, *policy;
-    out = fopen("pout_streamfunction.txt", "w");
-    rew = fopen("prewards_streamfunction.txt", "w");
-    Q_mat = fopen("pQ_matrix_streamfunction.txt", "w");
-    Q_mat_count = fopen("pQ_counter_streamfunction.txt", "w");
-    policy = fopen("ppolicy_streamfunction.txt", "w");
+    out = fopen("pout.txt", "w");
+    rew = fopen("prewards.txt", "w");
+    Q_mat = fopen("pQ_matrix.txt", "w");
+    Q_mat_count = fopen("pQ_counter.txt", "w");
+    policy = fopen("ppolicy.txt", "w");
     fprintf(rew, "episode,epsilon,Alpha,steps,return\n");
-    fprintf(out, "t         x_kite          z_kite         x_block          z_block          wind_x       wind_y       v_block_x\n");
+    fprintf(out, "t,x_kite,z_kite,x_block,z_block,theta,vtheta,windx,windy,v_block,Tension\n");
     fprintf(Q_mat, "episode,alpha_idx,action_0,action_1,action_2\n");
     fprintf(Q_mat_count, "episode,alpha_idx,action_0,action_1,action_2\n");
     fprintf(policy, "step,alpha,action,reward,Q[s+0],Q[s+1],Q[s+2]\n");
@@ -35,16 +35,15 @@ int main(int argc, char *argv[]){
     // vettori moto block dall'origine fissa (x, z)
     double *r_block = (double*) malloc(dim * sizeof(double)); 
     double *v_block = (double*) malloc(dim * sizeof(double));
-    double *a_block = (double*) malloc(dim * sizeof(double));  
-    
+    double *a_block = (double*) malloc(dim * sizeof(double));
+
     // theta, dtheta, ddtheta
     double *theta = (double*) malloc(3 * sizeof(double));  
 
-    double W[dim];
-
     double T = 0;
     double F_attr = 0;
-    double lift=0, drag=0;
+    double lift = 0;
+    double drag = 0;
     int sector = 0;
 
     // ======== LEARNING VARIABLES =======
@@ -64,9 +63,12 @@ int main(int argc, char *argv[]){
     int it = 0;
     int episode = 0;
 
-    rk[0] = 0;
-    rk[1] = R;
-    streamfunction2d(rk, W);
+    double W[dim] = {20, 0};
+
+    //rk[0] = 0;
+    //rk[1] = R;
+
+    //streamfunction2d(rk, W);
     printf("W0 = %f, W1 = %f\n", W[0], W[1]);
     double reward_max = sqrt(W[0]*W[0] + W[1]*W[1])*max_steps*h;
     printf("reward max %f\n\n", reward_max);
@@ -82,20 +84,12 @@ int main(int argc, char *argv[]){
 
     while (episode < learning_episodes){
 
-        /*if (episode == (int)(learning_episodes/5)){
+        if (episode == (int)(learning_episodes/2)){
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
         }
-        if (episode == (int)(learning_episodes*2/5)){
-            Alpha = Alpha*0.1;
-            printf("Decreasing learning rate: %f\n", Alpha);
-        }*/
-        if (episode == (int)(learning_episodes*3/5)){
-            epsilon = epsilon + 0.05;
-            Alpha = Alpha*0.1;
-            printf("Decreasing learning rate: %f\n", Alpha);
-        }
-        if (episode == (int)(learning_episodes*5.4)){
+        if (episode == (int)(learning_episodes*3/4)){
+            epsilon += 0.05;
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
         }
@@ -111,7 +105,7 @@ int main(int argc, char *argv[]){
 
         variables_initialization(rk, vk, ak, theta[0], theta[1], r_block, v_block, a_block, theta);
 
-        streamfunction2d(rk, W);
+        //streamfunction2d(rk, W);
 
         s_alpha = s_alpha0;
         a_alpha = select_alpha_action(epsilon, Q, s_alpha, episode);
@@ -128,7 +122,7 @@ int main(int argc, char *argv[]){
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, theta, s_alpha, \
                              W, &lift, &drag, &T, &F_attr, it, &sector);
 
-        streamfunction2d(rk, W);
+        //streamfunction2d(rk, W);
         
         while (rk[1] > 0){
 
@@ -157,7 +151,7 @@ int main(int argc, char *argv[]){
             integration_trajectory(rk, vk, ak, r_block, v_block, a_block, theta, s_alpha, \
                              W, &lift, &drag, &T, &F_attr, it, &sector);
 
-            streamfunction2d(rk, W);
+            //streamfunction2d(rk, W);
 
             reward = fabs(v_block[0])*reward_dt;
 
@@ -180,9 +174,10 @@ int main(int argc, char *argv[]){
             }*/
             
             // save data of last episode for plot
+
             if ( (episode == learning_episodes - 1) && (it%decision_time == 0) ){
-                fprintf(out, "%d       %f       %f      %f      %f      %f      %f     %f\n", it, \
-                    rk[0], rk[1], r_block[0], r_block[1], W[0], W[1], v_block[0]);
+                fprintf(out, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", it, rk[0], rk[1], 
+                    r_block[0], r_block[1], theta[0], theta[1], W[0], W[1], v_block[0], T);
             }
 
             if (rk[1] <= 0.) {
@@ -203,7 +198,7 @@ int main(int argc, char *argv[]){
                 if (episode == learning_episodes-1){
                     fill_Q_count(Q_mat_count, Q_count, episode);
                 }
-
+                
                 break;
             }
 

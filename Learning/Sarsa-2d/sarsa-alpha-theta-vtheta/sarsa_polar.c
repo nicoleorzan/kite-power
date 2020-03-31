@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
     Q_mat_count = fopen("pQ_count.txt", "w");
     policy = fopen("ppolicy.txt", "w");
     fprintf(rew, "episode,epsilon,Alpha,steps,return\n");
-    fprintf(out, "t         x_kite          z_kite         x_block          z_block          wind_x       wind_y       v_blocco_x\n");
+    fprintf(out, "t,x_kite,z_kite,x_block,z_block,theta,vtheta,windx,windy,v_block,Tension\n");
     fprintf(Q_mat, "episode,alpha_idx,theta,vtheta,action_0,action_1,action_2\n");
     fprintf(Q_mat_count, "episode,alpha_idx,theta,vtheta,action_0,action_1,action_2\n");
     fprintf(policy, "step,alpha,action,reward,Q[s+0],Q[s+1],Q[s+2]\n");
@@ -35,17 +35,17 @@ int main(int argc, char *argv[]){
     // vettori moto blocco dall'origine fissa (x, z)
     double *r_block = (double*) malloc(dim * sizeof(double)); 
     double *v_block = (double*) malloc(dim * sizeof(double));
-    double *a_block = (double*) malloc(dim * sizeof(double));  
-    
+    double *a_block = (double*) malloc(dim * sizeof(double));
+
     // theta, dtheta, ddtheta
     double *theta = (double*) malloc(3 * sizeof(double)); 
 
-    double W[dim];
+    double W[dim]= {0, 0};
 
     double T = 0;
     double F_attr = 0;
     double lift=0, drag=0;
-    int sector = 0; 
+    int sector = 0;
 
     // ======== LEARNING VARIABLES =======
 
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]){
     double reward_max = sqrt(W[0]*W[0] + W[1]*W[1])*max_steps*h;
     printf("reward max %f\n\n", reward_max);
 
-    initialize_Q(Q, reward_max);
+    initialize_Q(Q, 350);
     initialize_Q_count(Q_count, 0);
 
     printf("Total number of episodes: %d\n", learning_episodes);
@@ -82,20 +82,15 @@ int main(int argc, char *argv[]){
 
     while (episode < learning_episodes){
 
-        /*if (episode == (int)(learning_episodes/4)){
+        if (episode == (int)(learning_episodes/2)){
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
         }
-        if (episode == (int)(learning_episodes/2)){
+        if (episode == (int)(learning_episodes*3/4)){
             epsilon = epsilon + 0.05;
             Alpha = Alpha*0.1;
             printf("Decreasing learning rate: %f\n", Alpha);
-        }*/
-        if (episode == (int)(learning_episodes*3/4)){
-            Alpha = Alpha*0.1;
-            printf("Decreasing learning rate: %f\n", Alpha);
         }
-    
         // ======================= EPISODE INITIALIZATION ==========================
 
         printf("Polar code\n");
@@ -140,8 +135,8 @@ int main(int argc, char *argv[]){
                 Q[s_alpha*n_actions*n_thetas*n_thetas_vel + 2*n_thetas*n_thetas_vel
                  + s_theta*n_thetas_vel + s_vtheta]);
 
-                fprintf(out, "%d       %f       %f      %f      %f      %f      %f     %f\n", it, \
-                    rk[0], rk[1], r_block[0], r_block[1], W[0], W[1], v_block[0]);
+                fprintf(out, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", it, rk[0], rk[1], 
+                    r_block[0], r_block[1], theta[0], theta[1], W[0], W[1], v_block[0], T);
             }
 
             if (it > max_steps){
@@ -270,7 +265,7 @@ int main(int argc, char *argv[]){
     free(rk);
     free(vk);
     free(ak);
-
+    
     free(r_block);
     free(v_block);
     free(a_block);
