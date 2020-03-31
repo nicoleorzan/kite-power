@@ -85,7 +85,7 @@ int main(int argc, char *argv[]){
 
     variables_initialization(rk, vk, ak, theta, vtheta, r_block, v_block, a_block, r_diff, v_diff, a_diff);
 
-    streamfunction2d(rk, W);
+    //streamfunction2d(rk, W);
 
     int t = 0;   
 
@@ -96,7 +96,10 @@ int main(int argc, char *argv[]){
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
                             &theta, &vtheta, alpha_index, W, &lift, &drag, &T, &F_attr, i, &sector);
 
-        streamfunction2d(rk, W);
+        //printf("\ni=%d, L=%f, D=%f, T=%f, F_attr=%f, sector=%d, r_diff=%f\n", i, lift, drag, T, fabs(F_attr), \
+        sector, r_diff_modulo);
+
+        //streamfunction2d(rk, W);
 
         r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1]);
         theta_star = atan((lift - m*g)/drag);
@@ -111,7 +114,7 @@ int main(int argc, char *argv[]){
             fprintf(trajectory, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", \
                     t, rk[0], rk[1], r_block[0], r_block[1], theta, vtheta, W[0], W[1], v_block[0], T);
             if (rk[1] <=0. ){
-                printf("Kite Fall, steps %d, z<0, break\n", i);
+                //printf("Kite Fall, steps %d, z<0, break\n", i);
                 break;
             }
         }
@@ -138,7 +141,7 @@ int main(int argc, char *argv[]){
         dtheta = 0;
     }
 
-    //printf("iter, tot time, m_block, alpha, theta0, theta_fin, v_theta_fin, v_block_fin_x, Wind_x, Wind_y, ");
+    //printf("\niter, tot time, m_block, alpha, theta0, theta_fin, v_theta_fin, v_block_fin_x, Wind_x, Wind_y, ");
     //printf(" vrelkite_x, vrelkite_y, F_vinc, Tension, Lift, Drag, Stability\n");
     
     printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %d\n", \

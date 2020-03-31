@@ -4,21 +4,21 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define _theta0 PI/2.
-#define _dtheta0 -1.0
+#define _theta0 PI/4.
+#define _dtheta0 0.//-1.0
 #define phi0 0.
 #define dphi0 0.
 #define dim 3
 #define mu 0.
 
-// ============== FILE INPUT: ATTACK ANGLE AND WIND COEFF AND IF TRAJECTORY IS NEEDED ============
+// ============== FILE INPUT: ATTACK ANGLE AND WIND X, Y, Z ============
 
 int main(int argc, char *argv[]){
 
     // ========================= READING INPUT VARIABLES ==========================
 
-    if (argc <= 5){
-        printf("Missing inputs!!! Need ATTACK ANGLE INDEX, WIND X, WIND Y, WIND Z and 1 IF TRAJECTORY FILE IS NEEDED\n");
+    if (argc <= 4){
+        printf("Missing inputs!!! Need ATTACK ANGLE INDEX, WIND X, WIND Y, WIND Z\n");
         return 0;
     }
 
@@ -29,16 +29,14 @@ int main(int argc, char *argv[]){
     W[1] = atof( *(argv + 3) );
     W[2] = atof( *(argv + 4) );
 
-    bool file_needed = atof( *(argv + 4) );
-
     if (alpha_index >= n_alphas){
         printf("Alpha index too big!!!\n");
         return 0;
     }
 
-     // ========================= CREATING TRAJECTORY OUTPUT FILE ==========================
+    // ========================= CREATING TRAJECTORY OUTPUT FILE ==========================
 
-    char text[30];
+    /*char text[30];
     time_t now = time(NULL);
     struct tm tim;
     tim = *(localtime(&now));
@@ -52,12 +50,12 @@ int main(int argc, char *argv[]){
         strcat(filename_trajectory,"trajectory-");
         strcat(filename_trajectory,text);
         strcat(filename_trajectory,".txt");
-    }
+    }*/
 
-    FILE *trajectory, *wind;
-    trajectory = fopen("out.txt", "w+"); // fopen(filename_trajectory, "w+");
+    FILE *trajectory;
+    trajectory = fopen("out.txt", "w+");
 
-    fprintf(trajectory, "t       x_kite       y_kite       z_kite      x_blocco      y_blocco       z_blocco      theta      phi      r_diff\n");
+    fprintf(trajectory, "t,x_kite,y_kite,z_kite,x_block,y_block,z_block,theta,vtheta,windx,windy,wind_z,v_blockx,v_blocky,Tension\n");
 
     // ============================ VARIABLES DEFINITION ============================
 
@@ -95,8 +93,6 @@ int main(int argc, char *argv[]){
 
     variables_initialization(rk, vk, ak, theta, phi, dtheta, dphi, r_block, v_block, a_block, r_diff, v_diff, a_diff);
 
-    printf("init: %f       %f      %f      %f      %f      %f\n\n", rk[0], rk[1], rk[2], r_block[0], r_block[1], r_block[2]);
-
     int t = 0;   
 
     // ============================ KITE FLYING LOOP, STOPS WHEN FALL OCCURS ============================
@@ -105,6 +101,8 @@ int main(int argc, char *argv[]){
 
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
                             &theta, &phi, alpha_index, mu, W, &lift, &drag, &T, &F_attr, i, &sector);
+
+        printf("\nITERAZIONE=%d, L=%f, D=%f, T=%f, F_attr=%f, sector=%d\n", i, lift, drag, T, fabs(F_attr), sector);
 
         r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1] + r_diff[2]*r_diff[2]);
         F_vinc = m_block*g - T*sin(theta);
@@ -116,8 +114,9 @@ int main(int argc, char *argv[]){
         rk[2] = r_block[2] + (rk[2] - r_block[2])/fabs(r_diff_modulo)*R;
 
         if (i%PRINTSTEP == 0 || rk[2] <= 0.){
-            fprintf(trajectory, "%d       %f       %f      %f      %f      %f      %f      %f      %f      %f\n", \
-                    t, rk[0], rk[1], rk[2], r_block[0], r_block[1], r_block[2], theta, phi, r_diff_modulo);
+           fprintf(trajectory, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", \
+                    t, rk[0], rk[1], rk[2], r_block[0], r_block[1],r_block[2], theta, dtheta, \
+                    W[0], W[1], W[2], v_block[0], v_block[1],T);
             if (rk[2] <=0. ){ // maybe put rk[2] = 0
                 printf("Kite Fall, steps %d, z<0, break\n", i);
                 break;
@@ -149,7 +148,7 @@ int main(int argc, char *argv[]){
         dtheta = 0;
     }
 
-    printf("iter, tot time, m_block, alpha, mu, theta0, theta_fin, v_block_fin_x, v_block_fin_y, Wind_x, Wind_y, Wind_z");
+    printf("\niter, tot time, m_block, alpha, mu, theta0, theta_fin, v_block_fin_x, v_block_fin_y, Wind_x, Wind_y, Wind_z");
     printf(" vrelkite_x, vrelkite_y, vrelkite_z, F_vinc, Tension, Lift, Drag\n");
     
     printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n", \
@@ -169,9 +168,7 @@ int main(int argc, char *argv[]){
     free(a_diff);
 
     fclose(trajectory);
-    if (file_needed == 0){
-        remove(filename_trajectory);
-    }
+
     //remove("a.out");
 
     return 0;

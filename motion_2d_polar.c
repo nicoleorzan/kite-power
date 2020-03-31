@@ -1,4 +1,4 @@
-#include "Dynamics/dynamics_2d_spherical_cramer.h"
+#include "Dynamics/dynamics_2d_polar.h"
 #include "Dynamics/winds.h"
 #include <time.h>
 #include <string.h>
@@ -78,7 +78,7 @@ int main(int argc, char *argv[]){
     
     variables_initialization(rk, vk, ak, theta0, vtheta0, r_block, v_block, a_block, theta);
 
-    streamfunction2d(rk, W);
+    //streamfunction2d(rk, W);
 
     int t = 0;   
 
@@ -89,13 +89,13 @@ int main(int argc, char *argv[]){
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, theta, alpha_index, \
                              W, &lift, &drag, &T, &F_attr, i, &sector);
 
-        streamfunction2d(rk, W);  
+        //streamfunction2d(rk, W);  
 
         if (i%PRINTSTEP == 0  || rk[1] <= 0.){
             fprintf(trajectory, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", \
                     t, rk[0], rk[1], r_block[0], r_block[1], theta[0], theta[1], W[0], W[1], v_block[0], T);
             if (rk[1] <=0. ){
-                printf("Kite Fall, steps %d, z<0, break\n", i);
+                //printf("Kite Fall, steps %d, z<0, break\n", i);
                 break;
             }
         }
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]){
     //printf("iter, tot time, m_block, alpha, theta0, theta_fin, v_theta_fin, v_block_fin_x, Wind_x, Wind_y, ");
     //printf(" vrelkite_x, vrelkite_y, F_vinc, Tension, Lift, Drag, Stability\n");
     
-    printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f,  %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %d\n", \
+    printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %d\n", \
     t, t*h, m_block, alphas[alpha_index], theta0, theta[0], theta[1], v_block[0], W[0], W[1], \
     vk[0] - W[0], vk[1] - W[1], F_vinc, T, lift, drag, stability);
 
