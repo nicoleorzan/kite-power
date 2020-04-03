@@ -3,3 +3,4 @@
 *.dat
 *.ipynb_checkpoints
 *.txt
+*.out
