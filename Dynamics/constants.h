@@ -24,14 +24,14 @@ double alphas[n_alphas] = {-8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 19
 
 // integration constants
 #define h 0.0001                // Integration dt
-#define STEPS 3000000 //10 //47092 //38960 //64630 //47090  //47562 //47440
+#define STEPS 1000000 //9470
 #define PRINTSTEP 2000
 #define THRESHOLD 10E-5
 
 #define V_THRESHOLD 10E-8
 
 // 2d initial conditions
-#define theta0 PI/4.
+#define theta0 PI*3/4.
 #define vtheta0 .0
 
 #endif

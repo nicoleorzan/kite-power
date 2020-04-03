@@ -5,20 +5,20 @@
 #include <stdbool.h>
 
 #define _theta0 PI/4.
-#define _dtheta0 0.//-1.0
-#define phi0 0.
-#define dphi0 0.
+#define _phi0 0.
+#define _dtheta0 0.
+#define _dphi0 0.
 #define dim 3
 #define mu 0.
 
-// ============== FILE INPUT: ATTACK ANGLE AND WIND X, Y, Z ============
+// ============== FILE INPUT: ATTACK ANGLE AND WIND X, Y, Z, THETA0 AND PHI0 ============
 
 int main(int argc, char *argv[]){
 
     // ========================= READING INPUT VARIABLES ==========================
 
     if (argc <= 4){
-        printf("Missing inputs!!! Need ATTACK ANGLE INDEX, WIND X, WIND Y, WIND Z\n");
+        printf("Missing inputs!!! Need ATTACK ANGLE INDEX, WIND X, WIND Y, WIND Z, THETA0 AND PHI0\n");
         return 0;
     }
 
@@ -29,33 +29,24 @@ int main(int argc, char *argv[]){
     W[1] = atof( *(argv + 3) );
     W[2] = atof( *(argv + 4) );
 
+    double theta = _theta0;
+    double phi = _phi0;
+    double dtheta = _dtheta0;
+    double dphi = _dphi0;
+
     if (alpha_index >= n_alphas){
         printf("Alpha index too big!!!\n");
         return 0;
     }
 
-    // ========================= CREATING TRAJECTORY OUTPUT FILE ==========================
+    // ========================= OUTPUT FILES ==========================
 
-    /*char text[30];
-    time_t now = time(NULL);
-    struct tm tim;
-    tim = *(localtime(&now));
-    strftime(text, sizeof(text)-1, "%b-%d-%Y_%H-%M-%S", &tim);
-    text[30] = 0;
-
-    // concat the date to file name
-    char *filename_trajectory;
-    if((filename_trajectory = malloc(strlen("filename.txt")+strlen(text)+1)) != NULL){
-        filename_trajectory[0] = '\0';   // ensures the memory is an empty string
-        strcat(filename_trajectory,"trajectory-");
-        strcat(filename_trajectory,text);
-        strcat(filename_trajectory,".txt");
-    }*/
-
-    FILE *trajectory;
+    FILE *trajectory, *debug;
     trajectory = fopen("out.txt", "w+");
+    debug = fopen("debug3d.out", "w+");
 
     fprintf(trajectory, "t,x_kite,y_kite,z_kite,x_block,y_block,z_block,theta,vtheta,windx,windy,wind_z,v_blockx,v_blocky,Tension\n");
+    fprintf(debug, "i,Lift,Drag,Tension,F_attrito,sector\n");
 
     // ============================ VARIABLES DEFINITION ============================
 
@@ -74,10 +65,6 @@ int main(int argc, char *argv[]){
     double *v_diff = (double*) malloc(dim * sizeof(double));
     double *a_diff = (double*) malloc(dim * sizeof(double)); 
 
-    double theta = _theta0;
-    double phi = phi0;
-    double dtheta = _dtheta0;
-    double dphi = dphi0;
     double r_diff_modulo;
     double v_diff_modulo;
 
@@ -102,7 +89,8 @@ int main(int argc, char *argv[]){
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
                             &theta, &phi, alpha_index, mu, W, &lift, &drag, &T, &F_attr, i, &sector);
 
-        printf("\nITERAZIONE=%d, L=%f, D=%f, T=%f, F_attr=%f, sector=%d\n", i, lift, drag, T, fabs(F_attr), sector);
+        printf("\ni=%d, L=%f, D=%f, T=%f, F_attr=%f, sector=%d\n", i, lift, drag, T, fabs(F_attr), sector);
+        fprintf(debug, "%d,%.2f,%.2f,%.2f,%.2f,%d\n", i, lift, drag, T, fabs(F_attr),sector);
 
         r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1] + r_diff[2]*r_diff[2]);
         F_vinc = m_block*g - T*sin(theta);
@@ -168,6 +156,7 @@ int main(int argc, char *argv[]){
     free(a_diff);
 
     fclose(trajectory);
+    fclose(debug);
 
     //remove("a.out");
 

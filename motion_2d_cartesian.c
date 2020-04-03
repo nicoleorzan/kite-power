@@ -46,10 +46,12 @@ int main(int argc, char *argv[]){
         strcat(filename_trajectory,".txt");
     }*/
 
-    FILE *trajectory;
+    FILE *trajectory, *debug;
     trajectory = fopen("outc.txt", "w+"); // fopen(filename_trajectory, "w+");
+    debug = fopen("debug2d.out", "w+");
 
     fprintf(trajectory, "t,x_kite,z_kite,x_block,z_block,theta,vtheta,windx,windy,v_block,Tension\n");
+    fprintf(debug, "i,Lift,Drag,Tension,F_attrito,sector\n");
 
     // ============================ VARIABLES DEFINITION ============================
 
@@ -96,8 +98,8 @@ int main(int argc, char *argv[]){
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
                             &theta, &vtheta, alpha_index, W, &lift, &drag, &T, &F_attr, i, &sector);
 
-        //printf("\ni=%d, L=%f, D=%f, T=%f, F_attr=%f, sector=%d, r_diff=%f\n", i, lift, drag, T, fabs(F_attr), \
-        sector, r_diff_modulo);
+        printf("\ni=%d, L=%f, D=%f, T=%f, F_attr=%f, sector=%d\n", i, lift, drag, T, fabs(F_attr), sector);
+        fprintf(debug, "%d,%.2f,%.2f,%.2f,%.2f,%d\n", i, lift, drag, T, fabs(F_attr),sector);
 
         //streamfunction2d(rk, W);
 
@@ -141,8 +143,8 @@ int main(int argc, char *argv[]){
         dtheta = 0;
     }
 
-    //printf("\niter, tot time, m_block, alpha, theta0, theta_fin, v_theta_fin, v_block_fin_x, Wind_x, Wind_y, ");
-    //printf(" vrelkite_x, vrelkite_y, F_vinc, Tension, Lift, Drag, Stability\n");
+    printf("\niter, tot time, m_block, alpha, theta0, theta_fin, v_theta_fin, v_block_fin_x, Wind_x, Wind_y, ");
+    printf(" vrelkite_x, vrelkite_y, F_vinc, Tension, Lift, Drag, Stability\n");
     
     printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %d\n", \
     t, t*h, m_block, alphas[alpha_index], theta0, theta, dtheta, v_block[0], W[0], W[1], \
@@ -161,6 +163,7 @@ int main(int argc, char *argv[]){
     free(a_block);
 
     fclose(trajectory);
+    fclose(debug);
 
     return 0;
 
