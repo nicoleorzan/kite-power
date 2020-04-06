@@ -74,6 +74,15 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     *dc = 0.5*rho*CD_alpha[alpha]*A*Va_mod*Va_mod;
 
+    // Drag (x, z)
+
+    D[0] = *dc*cos(beta + PI);
+    D[1] = *dc*sin(beta + PI);
+
+    if (va[0] > 0) {
+        beta += PI;
+    }
+
     // Lift (x, z)
 
     if (beta > - PI/2. && beta < PI/2.){
@@ -84,10 +93,6 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         L[1] = *lc*sin(beta - PI/2.);
     }
 
-    // Drag (x, z)
-
-    D[0] = *dc*cos(beta + PI);
-    D[1] = *dc*sin(beta + PI);
 
     // ===================== CASE 1) BLOCK NOT MOVING ( |v-block| < 10E-6 ) ==================
 
@@ -327,32 +332,6 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     // Power
 
     //*power = *T*dpos[0]*sin(pos[1]);
-
-    #ifdef DEBUG
-        printf("thetastar = %f\n", theta_star);
-        printf("beta=%f\n", beta);
-        printf("W[0]= %f, W[1]=%f\n", W[0], W[1]);
-        printf("Vkx=%f, Vkz=%f\n", vk[0], vk[1]); 
-        printf("Va_mod=%f, va[0]=%f, va[1]=%f\n", Va_mod, va[0], va[1]); 
-        printf("L[0]=%f\n", L[0]); 
-        printf("L[1]=%f\n", L[1]); 
-        printf("D[0]=%f\n", D[0]); 
-        printf("D[1]=%f\n", D[1]); 
-        printf("Fg[0]=%f\n", Fg[0]); 
-        printf("Fg[1]=%f\n", Fg[1]); 
-        printf("T=%f, a_block[0]=%f, acc_theta = %f\n", *T, a_block[0], theta[2]);
-        printf("Tx=%f, Ty=%f\n", *T*cos(theta[0]), *T*sin(theta[0]));
-        printf("theta[0] = %f, theta[1] = %f\n", theta[0], theta[1]);
-        printf("a_block[0] = %f, a_block[1] = %f\n", a_block[0], a_block[1]);
-        printf("v_block[0] = %f, v_block[1] = %f\n", v_block[0], v_block[1]);
-        printf("r_block[0] = %f, r_block[1] = %f\n", r_block[0], r_block[1]);
-        printf("rk[0]= %f, rk[1]=%f\n", rk[0], rk[1]);
-        printf("vk[0]= %f, vk[1]=%f\n", vk[0], vk[1]);
-        printf("ak[0]= %f, ak[1]=%f\n", ak[0], ak[1]);
-        printf("forze totali x:%f\n", Ftot[0]);
-        printf("forze totali x:%f\n", Ftot[1]);
-        printf("\n");
-    #endif    
 
 }
 

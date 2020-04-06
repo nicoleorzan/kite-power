@@ -8,8 +8,8 @@
 #define g 9.81              	// m/s^2
 
 // kite
-#define m 10 //50.0              // kg
-#define A 25 //100               // m^2
+#define m 1 //50.0              // kg
+#define A 5 //100               // m^2
 #define R 50.0                   // cable length m (in the paper varies between 500 and 1000)
 
 // block
@@ -24,14 +24,14 @@ double alphas[n_alphas] = {-8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 19
 
 // integration constants
 #define h 0.0001                // Integration dt
-#define STEPS 1000000 //9470
-#define PRINTSTEP 2000
+#define STEPS 1000000
+#define PRINTSTEP 3000
 #define THRESHOLD 10E-5
 
 #define V_THRESHOLD 10E-8
 
 // 2d initial conditions
-#define theta0 PI*3/4.
+#define theta0 PI/4.
 #define vtheta0 .0
 
 #endif

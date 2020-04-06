@@ -125,11 +125,11 @@ int main(int argc, char *argv[]){
     }
 
     //printf("iter, tot time, m_block, alpha, theta0, theta_fin, v_theta_fin, v_block_fin_x, Wind_x, Wind_y, ");
-    //printf(" vrelkite_x, vrelkite_y, F_vinc, Tension, Lift, Drag, Stability\n");
+    //printf(" vkitex, vkitey, vrelkite_x, vrelkite_y, F_vinc, Tension, Lift, Drag, Stability\n");
     
-    printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %d\n", \
+    printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %d\n", \
     t, t*h, m_block, alphas[alpha_index], theta0, theta[0], theta[1], v_block[0], W[0], W[1], \
-    vk[0] - W[0], vk[1] - W[1], F_vinc, T, lift, drag, stability);
+    vk[0], vk[1], vk[0] - W[0], vk[1] - W[1], F_vinc, T, lift, drag, stability);
 
     free(rk);
     free(vk);

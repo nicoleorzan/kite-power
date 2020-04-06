@@ -27,6 +27,13 @@ void streamfunction2d(double *rk, double *W){ // kp kiteposition in (x,z)
     W[1] = -(k_wind*rk[1]*rk[1]/2*epsilon_wind*sin(PI*rk[1]/Ly)*cos(PI*rk[0]/Lx));
 }
 
+void streamfunction3d(double *rk, double *W){ // kp kiteposition in (x,z)
+
+    W[0] = k_wind*rk[2]*(1+epsilon_wind*sin(PI*rk[0]/Lx)*cos(PI*rk[2]/Ly)*PI/Ly);
+    W[2] = -(k_wind*rk[2]*rk[2]/2*epsilon_wind*sin(PI*rk[2]/Ly)*cos(PI*rk[0]/Lx));
+    W[1] = 0;
+}
+
 double ornstein_uhlenbeck(double * fluct){
 
     double u1 = (double)rand() / (double)RAND_MAX;

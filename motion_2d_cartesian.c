@@ -48,10 +48,10 @@ int main(int argc, char *argv[]){
 
     FILE *trajectory, *debug;
     trajectory = fopen("outc.txt", "w+"); // fopen(filename_trajectory, "w+");
-    debug = fopen("debug2d.out", "w+");
+    debug = fopen("debug2d.csv", "w+");
 
     fprintf(trajectory, "t,x_kite,z_kite,x_block,z_block,theta,vtheta,windx,windy,v_block,Tension\n");
-    fprintf(debug, "i,Lift,Drag,Tension,F_attrito,sector\n");
+    fprintf(debug, "i,Alpha,theta,Windx,Windz,Vkx,Vkz,Lift,Liftx,Liftz,Drag,Tension,F_attrito,sector\n");
 
     // ============================ VARIABLES DEFINITION ============================
 
@@ -85,9 +85,13 @@ int main(int argc, char *argv[]){
     int decollato = 0;
     double dtheta = 0;
 
-    variables_initialization(rk, vk, ak, theta, vtheta, r_block, v_block, a_block, r_diff, v_diff, a_diff);
+    double l0, l1;
+    double d0, d1;
 
+    variables_initialization(rk, vk, ak, theta, vtheta, r_block, v_block, a_block, r_diff, v_diff, a_diff);
+    //printf("r0=%f, r1=%f\n", rk[0], rk[1]);
     //streamfunction2d(rk, W);
+    //printf("w0=%f, w1=%f\n", W[0], W[1]);
 
     int t = 0;   
 
@@ -96,10 +100,9 @@ int main(int argc, char *argv[]){
     for (int i=0; i<STEPS; i++){
 
         integration_trajectory(rk, vk, ak, r_block, v_block, a_block, r_diff, v_diff, a_diff, \
-                            &theta, &vtheta, alpha_index, W, &lift, &drag, &T, &F_attr, i, &sector);
+                            &theta, &vtheta, alpha_index, W, &lift, &drag, &T, &F_attr, i, &sector, &l0, &l1, &d0, &d1);
 
-        printf("\ni=%d, L=%f, D=%f, T=%f, F_attr=%f, sector=%d\n", i, lift, drag, T, fabs(F_attr), sector);
-        fprintf(debug, "%d,%.2f,%.2f,%.2f,%.2f,%d\n", i, lift, drag, T, fabs(F_attr),sector);
+        //printf("\ni=%d, L=%f, D=%f, T=%f, F_attr=%f, sector=%d\n", i, lift, drag, T, fabs(F_attr), sector);
 
         //streamfunction2d(rk, W);
 
@@ -111,6 +114,11 @@ int main(int argc, char *argv[]){
 
         rk[0] = r_block[0] + (rk[0] - r_block[0])/fabs(r_diff_modulo)*R;
         rk[1] = r_block[1] + (rk[1] - r_block[1])/fabs(r_diff_modulo)*R;
+
+        /*if (i%20 == 0){
+            fprintf(debug, "%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%d\n",
+                    i, alphas[alpha_index], theta, W[0], W[1], vk[0], vk[1], lift, l0, l1, drag, T, fabs(F_attr), sector);
+        }*/
 
         if (i%PRINTSTEP == 0 || rk[1] <= 0.){
             fprintf(trajectory, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", \
@@ -143,12 +151,12 @@ int main(int argc, char *argv[]){
         dtheta = 0;
     }
 
-    printf("\niter, tot time, m_block, alpha, theta0, theta_fin, v_theta_fin, v_block_fin_x, Wind_x, Wind_y, ");
-    printf(" vrelkite_x, vrelkite_y, F_vinc, Tension, Lift, Drag, Stability\n");
+    //printf("\niter, tot time, m_block, alpha, theta0, theta_fin, v_theta_fin, v_block_fin_x, Wind_x, Wind_y, ");
+    //printf(" vkitex, vkitez, vrelkite_x, vrelkite_y, F_vinc, Tension, Lift, l0, l1, Drag, d0, d1, Stability\n");
     
-    printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %d\n", \
+    printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f,  %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %d\n", \
     t, t*h, m_block, alphas[alpha_index], theta0, theta, dtheta, v_block[0], W[0], W[1], \
-    vk[0] - W[0], vk[1] - W[1], F_vinc, T, lift, drag, stability);
+    vk[0], vk[1], vk[0] - W[0], vk[1] - W[1], F_vinc, T, lift, l0, l1, drag, d0, d1, stability);
 
     free(rk);
     free(vk);

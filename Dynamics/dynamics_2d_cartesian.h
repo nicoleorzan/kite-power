@@ -11,11 +11,10 @@
 
 double Va_mod;
 double va[2];
-double L[2];
-double L3;
-double L1, L2, L3;
+double L[2], L1[2];
+//double L1, L2, L3;
 double D[2];
-double D1, D2, D3;
+//double D1, D2, D3;
 double F_aer[2];
 double Fg[2] = {0, -m*g};
 double F_friction;
@@ -71,7 +70,8 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
                             double * theta, double *dtheta,
                             int alpha,
                             double * W, double * lc, double * dc,
-                            double * T, double *F_attr, int it, int * sector){
+                            double * T, double *F_attr, int it, int * sector,
+                            double *l0, double *l1, double *d0, double *d1){
 
     r_diff[0] = rk[0] - r_block[0];
     r_diff[1] = rk[1] - r_block[1];
@@ -93,36 +93,48 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     // Computing Lift and Drag     
 
     beta = atan2(va[1], va[0]);
-    printf("beta=%f\n", beta);
+
+    // Drag (x, z)  
+
+    *dc = 0.5*rho*CD_alpha[alpha]*A*Va_mod*Va_mod;
 
     D[0] = *dc*cos(beta + PI);
     D[1] = *dc*sin(beta + PI);    
-    
+    *d0 = D[0];
+    *d1 = D[1];
+
     if (va[0] > 0) {
         beta += PI;
-        printf("beta=%f\n", beta);
     }
 
     *lc = 0.5*rho*CL_alpha[alpha]*A*Va_mod*Va_mod;
-
-    *dc = 0.5*rho*CD_alpha[alpha]*A*Va_mod*Va_mod;
 
     // Lift (x, z)
 
     L[0] = *lc*cos(beta - PI/2.);
     L[1] = *lc*sin(beta - PI/2.);
 
-    // Drag (x, z)  
+    /*if (it == 0){
+        L[0] = *lc*cos(beta - PI/2.);
+        L[1] = *lc*sin(beta - PI/2.);
+    } else {
+        L1[0] = *lc*cos(beta - PI/2.);
+        L1[1] = *lc*sin(beta - PI/2.);
+
+        if ( L1[0]/fabs(L1[0])!= L[0]/fabs(L[0])  ){
+            L[0] = -L1[0];
+        } else { L[0] = L1[0]; }
+
+        if ( L1[1]/fabs(L1[1])!= L[1]/fabs(L[1])  ){
+            L[1] = -L1[1];
+        } else { L[1] = L1[1]; }
+    }*/
+
+    *l0 = L[0];
+    *l1 = L[1];
 
     F_aer[0] = L[0] + D[0];
     F_aer[1] = L[1] + D[1];
-
-    printf("vrel0=%f, vrel1=%f\n", va[0], va[1]);
-    printf("vdiff[0]=%f, vdiff[1]=%f\n", v_diff[0], v_diff[1]);
-    printf("r_diff[0]=%f, r_diff[1]=%f\n", r_diff[0], r_diff[1]);
-    printf("costheta=%f\n", cos(*theta));
-    printf("L0=%f, L1=%f\n", L[0], L[1]);
-    printf("D0=%f, D1=%f\n", D[0], D[1]);
 
     // ===================== CASE 1) BLOCK NOT MOVING ( |v-block| < 10E-6 ) ==================
 
@@ -132,33 +144,23 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
         denom1 = R*(m+m_block)/(m*m_block)
                 - sin(*theta)/m_block*(r_diff[1] - coeff_friction*cos(*theta)/fabs(cos(*theta))*r_diff[0]);
-        printf("denom1=%f\n", denom1);
 
         T1 = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
             + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
             - g*(r_diff[1] - coeff_friction*cos(*theta)/fabs(cos(*theta))*r_diff[0]);
-        printf("num1=%f\n", T1);
 
         T1 = T1/denom1;
-        printf("T1=%f\n", T1);
-
-        printf("F_aer[0]*r_diff[0]=%f, F_aer[1]*r_diff[1]=%f\n", F_aer[0]*r_diff[0], F_aer[1]*r_diff[1]);
-        printf("v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) =%f\n", v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1] );
-        printf("coeff_friction*cos(*theta)/fabs(cos(*theta))*r_diff[0]=%f\n",coeff_friction*cos(*theta)/fabs(cos(*theta))*r_diff[0]);
 
         // |Mg| < |Tz|
 
         denom2 = R*(m+m_block)/(m*m_block)
                     - sin(*theta)/m_block*(r_diff[1] + coeff_friction*cos(*theta)/fabs(cos(*theta))*r_diff[0]);
-        printf("denom2=%f\n", denom2);
 
         T2 = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
             + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
             - g*(r_diff[1] + coeff_friction*cos(*theta)/fabs(cos(*theta))*r_diff[0]);
-        printf("num2=%f\n", T2);
 
         T2 = T2/denom2;
-        printf("T2=%f\n", T2);
 
         if ( m_block*g > T1*sin(*theta) ){
             *sector = 1;
@@ -176,7 +178,6 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         N = m_block*g - Tension[1];
 
         F_friction = -coeff_friction*fabs(N)*cos(*theta)/fabs(cos(*theta));
-        //printf("coef=%f, fabs(N)=%f, cos(theta)=%f, F0 = %f\n",coeff_friction, fabs(N), cos(*theta), F_friction);
 
         *F_attr = F_friction;
 
@@ -216,16 +217,12 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
         denom1 = R*(m+m_block)/(m*m_block)
                 - sin(*theta)/m_block*(r_diff[1] - coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
-        printf("denom1=%f ", denom1);
 
         T1 = (F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1])/m
             + (v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1]) 
             - g*(r_diff[1] - coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
-        printf("num1=%f\n", T1);
-        printf("L[0] = %f, L[1]=%f\n", L[0], L[1]);
 
         T1 = T1/denom1;
-        printf("T1=%f\n", T1);
 
         // |Mg| < |Tz|
 
@@ -266,9 +263,6 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         a_block[0] = ( Tension[0] + F_friction )/m_block;
 
     }
-
-    //printf("\ni=%d, beta=%f, Lx = %f\n", it, beta, L[0]);
-    //printf("T[0] = %f, T[1] = %f\n", Tension[0], Tension[1]);
 
     a_block[1] = 0;
 
