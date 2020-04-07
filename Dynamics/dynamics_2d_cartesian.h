@@ -11,10 +11,8 @@
 
 double Va_mod;
 double va[2];
-double L[2], L1[2];
-//double L1, L2, L3;
+double L[2];
 double D[2];
-//double D1, D2, D3;
 double F_aer[2];
 double Fg[2] = {0, -m*g};
 double F_friction;
@@ -24,9 +22,8 @@ double T2, denom2;
 double Tension[2], denom;
 double Ftot[2]; 
 double direction = 0;
-
-double t1[3], t2[3], t3[3];
-double t2_mod, t3_mod;
+double t2;
+double t3[2];
 
 double beta;
 double phi = 0;
@@ -94,41 +91,30 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     beta = atan2(va[1], va[0]);
 
-    // Drag (x, z)  
+    *lc = 0.5*rho*CL_alpha[alpha]*A*Va_mod*Va_mod;
 
     *dc = 0.5*rho*CD_alpha[alpha]*A*Va_mod*Va_mod;
 
+    t2 = (cos(*theta)*va[1] - sin(*theta)*va[0])/fabs(cos(*theta)*va[1] - sin(*theta)*va[0]);
+
+    t3[0] = va[1]*t2/Va_mod;
+    t3[1] = -va[0]*t2/Va_mod;
+
+    L[0] = *lc*t3[0];
+    L[1] = *lc*t3[1];
+ 
     D[0] = *dc*cos(beta + PI);
     D[1] = *dc*sin(beta + PI);    
     *d0 = D[0];
     *d1 = D[1];
 
-    if (va[0] > 0) {
+    /*if (va[0] > 0) {
         beta += PI;
-    }
-
-    *lc = 0.5*rho*CL_alpha[alpha]*A*Va_mod*Va_mod;
-
-    // Lift (x, z)
-
-    L[0] = *lc*cos(beta - PI/2.);
-    L[1] = *lc*sin(beta - PI/2.);
-
-    /*if (it == 0){
-        L[0] = *lc*cos(beta - PI/2.);
-        L[1] = *lc*sin(beta - PI/2.);
-    } else {
-        L1[0] = *lc*cos(beta - PI/2.);
-        L1[1] = *lc*sin(beta - PI/2.);
-
-        if ( L1[0]/fabs(L1[0])!= L[0]/fabs(L[0])  ){
-            L[0] = -L1[0];
-        } else { L[0] = L1[0]; }
-
-        if ( L1[1]/fabs(L1[1])!= L[1]/fabs(L[1])  ){
-            L[1] = -L1[1];
-        } else { L[1] = L1[1]; }
     }*/
+
+    //L[0] = *lc*cos(beta - PI/2.);
+    //L[1] = *lc*sin(beta - PI/2.);
+    //printf("L0=%f, L1=%f\n", L[0], L[1]);
 
     *l0 = L[0];
     *l1 = L[1];
@@ -234,13 +220,6 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
             - g*(r_diff[1] + coeff_friction*r_diff[0]*v_block[0]/fabs(v_block[0]));
 
         T2 = T2/denom2;
-
-        //printf("F*r = %f\n", F_aer[0]*r_diff[0] + F_aer[1]*r_diff[1]);
-        //printf("va[0]=%f, va[1]=%f\n", va[0], va[1]);
-        //printf("L0=%f, L1=%f\n", L[0], L[1]);
-        //printf("D0=%f, D1=%f\n", D[0], D[1]);
-        //printf("rd0=%f, rd1=%f\n\n", r_diff[0], r_diff[1]);
-        //printf("vb0=%f, vb1=%f, T1=%f, T2=%f\n", v_block[0], v_block[1], T1, T2);
 
         if ( m_block*g > T1*sin(*theta) ) {
             *sector = 4;

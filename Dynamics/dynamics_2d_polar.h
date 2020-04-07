@@ -24,6 +24,8 @@ double Tension[2];
 double Ftot[2]; 
 double T1, a_block1, ddtheta1;
 double T2, a_block2, ddtheta2;
+double t2;
+double t3[2];
 
 //double theta_star;
 
@@ -74,25 +76,24 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     *dc = 0.5*rho*CD_alpha[alpha]*A*Va_mod*Va_mod;
 
-    // Drag (x, z)
+    t2 = (cos(*theta)*va[1] - sin(*theta)*va[0])/fabs(cos(*theta)*va[1] - sin(*theta)*va[0]);
+
+    t3[0] = va[1]*t2/Va_mod;
+    t3[1] = -va[0]*t2/Va_mod;
+
+    L[0] = *lc*t3[0];
+    L[1] = *lc*t3[1];
 
     D[0] = *dc*cos(beta + PI);
     D[1] = *dc*sin(beta + PI);
 
-    if (va[0] > 0) {
+    /*if (va[0] > 0) {
         beta += PI;
     }
 
-    // Lift (x, z)
-
-    if (beta > - PI/2. && beta < PI/2.){
-        L[0] = -*lc*cos(beta + PI/2.);
-        L[1] = -*lc*sin(beta + PI/2.);
-    } else {
-        L[0] = *lc*cos(beta - PI/2.);
-        L[1] = *lc*sin(beta - PI/2.);
-    }
-
+    L[0] = *lc*cos(beta - PI/2.);
+    L[1] = *lc*sin(beta - PI/2.);
+    */
 
     // ===================== CASE 1) BLOCK NOT MOVING ( |v-block| < 10E-6 ) ==================
 
@@ -328,10 +329,6 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     //Ftot[0] = L[0] + D[0] + Fg[0] - Tension[0];
     //Ftot[1] = L[1] + D[1] + Fg[1] - Tension[1];
-
-    // Power
-
-    //*power = *T*dpos[0]*sin(pos[1]);
 
 }
 
