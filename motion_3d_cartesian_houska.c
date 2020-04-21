@@ -1,4 +1,4 @@
-#include "Dynamics/dynamics_3d_cartesian.h"
+#include "Dynamics/dynamics_3d_cartesian_houska.h"
 #include "Dynamics/winds.h"
 #include <time.h>
 #include <string.h>
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]){
 
     FILE *trajectory, *debug;
     trajectory = fopen("out.txt", "w+");
-    debug = fopen("debug3d.csv", "w+");
+    debug = fopen("hdebug3d.csv", "w+");
 
     //fprintf(trajectory, "t,x_kite,y_kite,z_kite,x_block,y_block,z_block,theta,vtheta,windx,windy,wind_z,v_blockx,v_blocky,Tension\n");
     //fprintf(debug, "i,Alpha,mu,theta,Windx,Windy,Windz,Vkx,Vky,Vkz,Lift,Liftx,Lifty,Liftz,Drag,Tension,F_attrito,sector,uno,due,tre,1-sp,angle,prod_vect,t2[0],t2[1],t2[2]\n");
