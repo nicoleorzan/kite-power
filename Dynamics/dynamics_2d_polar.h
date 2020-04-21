@@ -76,7 +76,11 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     *dc = 0.5*rho*CD_alpha[alpha]*A*Va_mod*Va_mod;
 
-    t2 = (cos(*theta)*va[1] - sin(*theta)*va[0])/fabs(cos(*theta)*va[1] - sin(*theta)*va[0]);
+    //t2 = (cos(*theta)*va[1] - sin(*theta)*va[0])/fabs(cos(*theta)*va[1] - sin(*theta)*va[0]);
+    if (it == 0){
+        t2 = (cos(*theta)*va[1] - sin(*theta)*va[0])/fabs(cos(*theta)*va[1] - sin(*theta)*va[0]);
+        //*et_val = t2;
+    }
 
     t3[0] = va[1]*t2/Va_mod;
     t3[1] = -va[0]*t2/Va_mod;

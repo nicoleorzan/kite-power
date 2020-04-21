@@ -13,13 +13,8 @@
 
 double Va_mod;
 double va[3];
-double va1[3];
 double L[3];
-double Ls[3];
-double fabsL1[3];
 double D[3];
-double L1[3];
-double D1[3];
 double F_aer[3];
 double Fg[3] = {0, 0, -m*g};
 double F_friction[2];
@@ -28,31 +23,10 @@ double T1, denom1;
 double T2, denom2;
 double Tension[3], denom;
 double Ftot[3];
-double mod_dist;
 
 double t1[3], t2[3], t3[3];
-double t2s[3], t3s[3];
 double t2_mod, t3_mod;
-double t2s_mod, t3s_mod;
 double v_block_mod;
-double one,two,three;
-double angle;
-
-double r_diff_modulo, v_diff_modulo;
-double W_spher[3];
-double va_spher[3];
-double _dtheta, _dphi;
-double vk_spher[3];
-double psx, psy, psz;
-double anglex, angley, anglez;
-
-/*double vk_spher[3];
-double we[3], ewep[3], et[3];
-double nwep, nwe, eta;
-double Caer;
-double Psi = 0;
-double dtheta, dphi;
-double L_mod, L_mod1;*/
 
 void variables_initialization(double *rk, double *vk, double *ak, 
                              double theta, double phi,
@@ -106,10 +80,9 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
                             int alpha, double mu,
                             double * W, double * lc, double * dc,
                             double * T, double *F_attr, int it, int * sector, 
-                            double *l0, double *l1, double *l2, double *d0, double *d1, double *d2){ //},
-                            //int * uno, int * due, int * tre, double * sp, double * pv, double *t22){
+                            double *l0, double *l1, double *l2, double *d0, double *d1, double *d2){
 
-    printf("\ni=%d, noi\n", it);                               
+    //printf("\ni=%d, noi\n", it);                               
     
     r_diff[0] = rk[0] - r_block[0];
     r_diff[1] = rk[1] - r_block[1];
@@ -123,15 +96,9 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     a_diff[1] = ak[1] - a_block[1];
     a_diff[2] = ak[2] - a_block[2];
 
-    r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1] + r_diff[2]*r_diff[2]);
-    v_diff_modulo = sqrt(v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1] + v_diff[2]*v_diff[2]);
-
     *theta = atan2(sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1]), r_diff[2]);
     *phi = atan2(r_diff[1], r_diff[0]);
-
-    _dtheta = -1/(sqrt(1-(r_diff[2]/r_diff_modulo)*(r_diff[2]/r_diff_modulo)))*(v_diff[2]*r_diff_modulo-r_diff[2]*v_diff_modulo)/(r_diff_modulo*r_diff_modulo);
-    _dphi = 1/(1+(r_diff[1]/r_diff[0])*(r_diff[1]/r_diff[0]))*(v_diff[1]*r_diff[0] - r_diff[0]*v_diff[1])/(r_diff[0]*r_diff[0]);
-                            
+                       
     va[0] = vk[0] - W[0];              // Apparent velocity on x
     va[1] = vk[1] - W[1];              // Apparent velocity on y
     va[2] = vk[2] - W[2];              // Apparent velocity on z
@@ -142,7 +109,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     // Computing Lift and Drag   
 
     // computing t1 
-
+    
     t1[0] = sin(*theta)*cos(*phi);
     t1[1] = sin(*theta)*sin(*phi);
     t1[2] = cos(*theta);
@@ -157,7 +124,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     t2[0] = t2[0]/t2_mod;
     t2[1] = t2[1]/t2_mod;
     t2[2] = t2[2]/t2_mod;
-    //printf("t20=%f, t21=%f, t22=%f\n", t2[0], t2[1], t2[2]);
+    printf("t20=%f, t21=%f, t22=%f\n", t2[0], t2[1], t2[2]);
 
     // Computing t3 = vrel x t2
 
@@ -170,7 +137,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     t3[0] = t3[0]/t3_mod;
     t3[1] = t3[1]/t3_mod;
     t3[2] = t3[2]/t3_mod;
-    //printf("t30=%f, t31=%f, t32=%f\n", t3[0], t3[1], t3[2]);
+    printf("t30=%f, t31=%f, t32=%f\n", t3[0], t3[1], t3[2]);
     
     // Computing Lift and Drag          
 
@@ -189,7 +156,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     D[0] = -*dc*va[0];
     D[1] = -*dc*va[1];
     D[2] = -*dc*va[2];
-    printf("D[0]=%f, D[1]=%f, D[2]=%f\n", D[0], D[1], D[2]);
+    printf("D[0]=%f, D[1]=%f, D[2]=%f\n\n", D[0], D[1], D[2]);
 
     *d0 = D[0];
     *d1 = D[1];

@@ -11,15 +11,10 @@
 
 //#define DEBUG
 
-double Va_mod;
-double va[3];
-double va1[3];
+double mod_we;
+double we[3];
 double L[3];
-double Ls[3];
-double fabsL1[3];
 double D[3];
-double L1[3];
-double D1[3];
 double F_aer[3];
 double Fg[3] = {0, 0, -m*g};
 double F_friction[2];
@@ -28,25 +23,20 @@ double T1, denom1;
 double T2, denom2;
 double Tension[3], denom;
 double Ftot[3];
-double mod_dist;
 
-double t1[3], t2[3], t3[3];
-double t2s[3], t3s[3];
-double t2_mod, t3_mod;
-double t2s_mod, t3s_mod;
+double er[3];
 double v_block_mod;
-double one,two,three;
-double angle;
 
-double Psi;
 double wep_mod;
-double mod_we;
 double scal_norm, mod_sqrt;
-double we[3], wep[3];
+double wep[3];
 double ew[3], e0[3];
 double et[3];
 double Caer;
-double F_aerh[3];
+double sqrt_var;
+
+double nwep;
+double ewep[3];
 
 void variables_initialization(double *rk, double *vk, double *ak, 
                              double theta, double phi,
@@ -97,13 +87,12 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
                             double * r_block, double * v_block, double * a_block, // Block variables
                             double * r_diff, double * v_diff, double * a_diff, 
                             double * theta, double * phi,
-                            int alpha, double mu,
+                            int alpha, double Psi,
                             double * W, double * lc, double * dc,
                             double * T, double *F_attr, int it, int * sector, 
-                            double *l0, double *l1, double *l2, double *d0, double *d1, double *d2){ //,
-                            //int * uno, int * due, int * tre, double * sp, double * pv, double *t22){
+                            double *l0, double *l1, double *l2, double *d0, double *d1, double *d2){
 
-    printf("\ni=%d, houska\n", it);                              
+    //printf("\ni=%d, houska\n", it);                              
     
     r_diff[0] = rk[0] - r_block[0];
     r_diff[1] = rk[1] - r_block[1];
@@ -117,44 +106,32 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     a_diff[1] = ak[1] - a_block[1];
     a_diff[2] = ak[2] - a_block[2];
 
-    //r_diff_modulo = sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1] + r_diff[2]*r_diff[2]);
-    //v_diff_modulo = sqrt(v_diff[0]*v_diff[0] + v_diff[1]*v_diff[1] + v_diff[2]*v_diff[2]);
-
     *theta = atan2(sqrt(r_diff[0]*r_diff[0] + r_diff[1]*r_diff[1]), r_diff[2]);
     *phi = atan2(r_diff[1], r_diff[0]);
 
-    //_dtheta = -1/(sqrt(1-(r_diff[2]/r_diff_modulo)*(r_diff[2]/r_diff_modulo)))*(v_diff[2]*r_diff_modulo-r_diff[2]*v_diff_modulo)/(r_diff_modulo*r_diff_modulo);
-    //_dphi = 1/(1+(r_diff[1]/r_diff[0])*(r_diff[1]/r_diff[0]))*(v_diff[1]*r_diff[0] - r_diff[0]*v_diff[1])/(r_diff[0]*r_diff[0]);
-                            
-    va[0] = vk[0] - W[0];              // Apparent velocity on x
-    va[1] = vk[1] - W[1];              // Apparent velocity on y
-    va[2] = vk[2] - W[2];              // Apparent velocity on z
-
-    Va_mod = sqrt(va[0]*va[0] + va[1]*va[1] + va[2]*va[2]);
-
-    // Computing Lift and Drag   
-
-    // computing t1 (che sarebbe er)
-
-    t1[0] = sin(*theta)*cos(*phi);
-    t1[1] = sin(*theta)*sin(*phi);
-    t1[2] = cos(*theta);
-
-    Psi = 0; // Psi = mu si puo` mettere
-
-    we[0] = -va[0];
-    we[1] = -va[1];
-    we[2] = -va[2];
+    we[0] = W[0] - vk[0];              // Effective wind on x
+    we[1] = W[1] - vk[1];              // Effective wind on y
+    we[2] = W[2] - vk[2];              // Effective wind on z
 
     mod_we = sqrt(we[0]*we[0] + we[1]*we[1] + we[2]*we[2]);
 
+    // Computing Lift and Drag   
+
+    // computing er
+
+    er[0] = sin(*theta)*cos(*phi);
+    er[1] = sin(*theta)*sin(*phi);
+    er[2] = cos(*theta);
+
     // calcolo la componente del vento effettivo sul piano theta/phi sottraendo ad ogni componente il prod
     // scalare tra We ed er:
-    // We_piano = We - (t1*we)*t1
+    // We_piano = We - (er*we)*er
 
-    wep[0] = we[0] - (t1[0]*we[0] + t1[1]*we[1] + t1[2]*we[2])*t1[0];
-    wep[1] = we[1] - (t1[0]*we[0] + t1[1]*we[1] + t1[2]*we[2])*t1[1];
-    wep[2] = we[2] - (t1[0]*we[0] + t1[1]*we[1] + t1[2]*we[2])*t1[2];
+    wep[0] = we[0] - (er[0]*we[0] + er[1]*we[1] + er[2]*we[2])*er[0];
+    wep[1] = we[1] - (er[0]*we[0] + er[1]*we[1] + er[2]*we[2])*er[1];
+    wep[2] = we[2] - (er[0]*we[0] + er[1]*we[1] + er[2]*we[2])*er[2];
+    //printf("we[0]=%f, we[1]=%f, we[2]=%f\n", we[0], we[1], we[2]);
+    //printf("wep[0]=%f, wep[1]=%f, wep[2]=%f\n", wep[0], wep[1], wep[2]);
 
     // normalizzo wep ==> ew
 
@@ -163,31 +140,58 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     ew[0] = wep[0]/wep_mod;
     ew[1] = wep[1]/wep_mod;
     ew[2] = wep[2]/wep_mod;
+    //printf("ew[0]=%f, ew[1]=%f, ew[2]=%f\n", ew[0], ew[1], ew[2]);
 
     // calcolo e0, vettore perpendicolare ad er ed ew
 
-    e0[0] = t1[1]*ew[2] - t1[2]*ew[1];
-    e0[1] = t1[2]*ew[0] - t1[0]*ew[2];
-    e0[2] = t1[0]*ew[1] - t1[1]*ew[0];
+    e0[0] = er[1]*ew[2] - er[2]*ew[1];
+    e0[1] = er[2]*ew[0] - er[0]*ew[2];
+    e0[2] = er[0]*ew[1] - er[1]*ew[0];
+    printf("e0[0]=%f, e0[1]=%f, e0[2]=%f\n", e0[0], e0[1], e0[2]);
 
     // per calcolare et, lo scompongo sulla terna er, ew, e0
     // et = ar*er + aw*ew + a0*e0 ==> vedi eq 8 del paper che ti ho mandato
 
-    scal_norm = (t1[0]*we[0] + t1[1]*we[1] + t1[2]*we[2])/wep_mod;
-    mod_sqrt = (t1[0]*we[0] + t1[1]*we[1] + t1[2]*we[2])*(t1[0]*we[0] + t1[1]*we[1] + t1[2]*we[2])/(wep_mod*wep_mod);
+    scal_norm = (er[0]*we[0] + er[1]*we[1] + er[2]*we[2])/wep_mod;
+    mod_sqrt = (er[0]*we[0] + er[1]*we[1] + er[2]*we[2])*(er[0]*we[0] + er[1]*we[1] + er[2]*we[2])/(wep_mod*wep_mod);
+    //printf("(er[0]*we[0] + er[1]*we[1] + er[2]*we[2])=%f\n",  (er[0]*we[0] + er[1]*we[1] + er[2]*we[2]));
+    //printf("wep_mod=%f\n", wep_mod);
 
-    et[0] = sin(Psi)*t1[0] - scal_norm*sin(Psi)*ew[0] + 
-        sqrt( cos(Psi)*cos(Psi) - mod_sqrt*sin(Psi)*sin(Psi))*e0[0];
+    //printf("scal_norm=%f\nmod_sqrt=%f\n", scal_norm, mod_sqrt);
 
-    et[1] = sin(Psi)*t1[1] - scal_norm*sin(Psi)*ew[1] + 
-        sqrt( cos(Psi)*cos(Psi) - mod_sqrt*sin(Psi)*sin(Psi))*e0[1];
+    //printf("sin(Psi)*er[0] - scal_norm*sin(Psi)*ew[0]=%f\n", sin(Psi)*er[0] - scal_norm*sin(Psi)*ew[0]);
 
-    et[2] = sin(Psi)*t1[2] - scal_norm*sin(Psi)*ew[2] + 
-        sqrt( cos(Psi)*cos(Psi) - mod_sqrt*sin(Psi)*sin(Psi))*e0[2];
+    //printf("cos(Psi)*cos(Psi) - mod_sqrt*sin(Psi)*sin(Psi) =%f\n", cos(Psi)*cos(Psi) - mod_sqrt*sin(Psi)*sin(Psi) );
 
-    //printf("et[0]=%f, et[1]=%f, et[2]=%f\n", et[0], et[1], et[2]);
+    //printf("cosphi=%f, sinphi=%f\n", cos(Psi), sin(Psi));
+    //printf("cos^2phi=%f, sin^2phi=%f\n", cos(Psi)*cos(Psi), sin(Psi)*sin(Psi));
 
-    Caer = 0.5*rho*A*Va_mod;
+    //printf("mod_sqrt*sin(Psi)*sin(Psi)=%f\n", mod_sqrt*sin(Psi)*sin(Psi) );
+
+    sqrt_var = cos(Psi)*cos(Psi) - mod_sqrt*sin(Psi)*sin(Psi);
+
+    if ( sqrt_var < 0){
+        sqrt_var = -sqrt_var;
+    }
+    printf("ao=%f\n", sqrt(sqrt_var));
+
+    //printf("sin(Psi)=%f, scal_norm*sin(Psi)=%f\n",sin(Psi), scal_norm*sin(Psi));
+
+    et[0] = sin(Psi)*er[0] - scal_norm*sin(Psi)*ew[0] + 
+        sqrt( sqrt_var )*e0[0];
+        //sqrt( cos(Psi)*cos(Psi) - mod_sqrt*sin(Psi)*sin(Psi) )*e0[0];
+
+    et[1] = sin(Psi)*er[1] - scal_norm*sin(Psi)*ew[1] + 
+        sqrt( sqrt_var )*e0[1];
+        //sqrt( cos(Psi)*cos(Psi) - mod_sqrt*sin(Psi)*sin(Psi) )*e0[1];
+
+    et[2] = sin(Psi)*er[2] - scal_norm*sin(Psi)*ew[2] + 
+        sqrt( sqrt_var )*e0[2];
+        //sqrt( cos(Psi)*cos(Psi) - mod_sqrt*sin(Psi)*sin(Psi) )*e0[2];
+
+    printf("et[0]=%f, et[1]=%f, et[2]=%f\n", et[0], et[1], et[2]);
+
+    Caer = 0.5*rho*A*mod_we;
 
     // scrivo lift e drag come L = C*(we x et), D = C*el. non uso we normalizzato perche` 
     // cosi` ho dentro anche la componente della velocita che mi serve per calcoalre il lift
@@ -195,18 +199,30 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     L[0] = Caer*CL_alpha[alpha]*(we[1]*et[2]-we[2]*et[1]);
     L[1] = Caer*CL_alpha[alpha]*(we[2]*et[0]-we[0]*et[2]);
     L[2] = Caer*CL_alpha[alpha]*(we[0]*et[1]-we[1]*et[0]);
-    printf("L1[0]=%f, L1[1]=%f, L1[2]=%f\n", L[0], L[1], L[2]);
+    printf("L[0]=%f, L[1]=%f, L[2]=%f\n", L[0], L[1], L[2]);
+    
+    *lc =  Caer*CL_alpha[alpha]*mod_we;
+
+    *l0 = L[0];
+    *l1 = L[1];
+    *l2 = L[2];
 
     D[0] = Caer*CD_alpha[alpha]*we[0];
     D[1] = Caer*CD_alpha[alpha]*we[1];
     D[2] = Caer*CD_alpha[alpha]*we[2];
-    printf("D1[0]=%f, D1[1]=%f, D1[2]=%f\n", D[0], D[1], D[2]);
+    printf("D[0]=%f, D[1]=%f, D[2]=%f\n\n", D[0], D[1], D[2]);
+
+    *d0 = D[0];
+    *d1 = D[1];
+    *d2 = D[2];
+
+    *dc = Caer*CD_alpha[alpha]*mod_we;
 
     F_aer[0] = L[0] + D[0];
     F_aer[1] = L[1] + D[1];
     F_aer[2] = L[2] + D[2];
 
-    // COMPUTE TENSION
+    // Compute tension
 
     // ===================== CASE 1) BLOCK NOT MOVING ( |v-block| < 10E-6 ) ==================
 
@@ -291,7 +307,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
         }
     }
 
-    // ========================== CASE 2) BLOCK MOVING (|v| >= 10E-6) ===> Fmu = -mu*|N|*vx/|vx| =====================
+    // ========================== CASE 2) BLOCK MOVING (|v| >= 10E-6) ===> Fmu = -Psi*|N|*vx/|vx| =====================
 
     else { 
         

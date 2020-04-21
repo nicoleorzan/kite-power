@@ -13,7 +13,7 @@
 #define R 50.0                   // cable length m (in the paper varies between 500 and 1000)
 
 // block
-#define m_block 100.0           // Block mass
+#define m_block 40.0           // Block mass
 #define coeff_friction 0.4      // Block friction coefficient
 
 /* Paper: Fagiano et al., "High Altitude Wind Energy Generation Using Controlled Power Kites", 2010 */
@@ -24,8 +24,8 @@ double alphas[n_alphas] = {-8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 19
 
 // integration constants
 #define h 0.0001                // Integration dt
-#define STEPS 1000000
-#define PRINTSTEP 3000
+#define STEPS 10000
+#define PRINTSTEP 1000
 #define THRESHOLD 10E-5
 
 #define V_THRESHOLD 10E-8

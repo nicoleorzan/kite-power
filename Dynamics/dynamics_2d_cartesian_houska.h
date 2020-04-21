@@ -30,8 +30,20 @@ double beta;
 double phi = 0;
 double mu = 0;
 
-double sp;
-double angle;
+double we[2], mod_we;
+double er[2];
+double wep[2];
+double wep_mod;
+double ew[2];
+double etz;
+double etz_tmp;
+double e0z;
+double scal_norm;
+double mod_sqrt;
+double sqrt_var;
+double Caer;
+
+double newp;
 
 void variables_initialization(double *rk, double *vk, double *ak,
                              double theta, double dtheta,
@@ -85,65 +97,79 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     *theta = atan2(r_diff[1], r_diff[0]);
     *dtheta = 1/(1+r_diff[1]/r_diff[0])*(v_diff[1]*r_diff[0] - r_diff[1]*v_diff[0])/(r_diff[0]*r_diff[0]);
-                        
-    va[0] = vk[0] - W[0];              // Apparent velocity on x
-    va[1] = vk[1] - W[1];              // Apparent velocity on z
 
-    Va_mod = sqrt(va[0]*va[0] + va[1]*va[1]);
+    we[0] = W[0] - vk[0];               // Effective wind on x
+    we[1] = W[1] - vk[1];               // Effective wind on z
 
-    // Computing Lift and Drag     
+    mod_we = sqrt(we[0]*we[0] + we[1]*we[1]);
 
-    beta = atan2(va[1], va[0]);
+    er[0] = cos(*theta);                // Positon versor on x
+    er[1] = sin(*theta);                // Positon versor on z
 
-    *lc = 0.5*rho*CL_alpha[alpha]*A*Va_mod*Va_mod;
+    // effective wind without the er component: projection of we over theta
+    wep[0] = we[0] - (er[0]*we[0] + er[1]*we[1])*er[0];
+    wep[1] = we[1] - (er[0]*we[0] + er[1]*we[1])*er[1];
+    //printf("we[0]=%f, we[1]=%f\n", we[0], we[1]);
+    //printf("wep[0]=%f, wep[1]=%f\n", wep[0], wep[1]);
 
-    *dc = 0.5*rho*CD_alpha[alpha]*A*Va_mod*Va_mod;
+    wep_mod = sqrt(wep[0]*wep[0] + wep[1]*wep[1]);
 
-    //printf("\nva[0]=%f, va[1]=%f\n", va[0]/Va_mod, va[1]/Va_mod);
-    //printf("t1[0]=%f, t1[1]=%f\n", cos(*theta), sin(*theta));
+    // normalization: wep => ew
+    ew[0] = wep[0]/wep_mod;
+    ew[1] = wep[1]/wep_mod;
 
-    if (it == 0){
-        t2 = (cos(*theta)*va[1] - sin(*theta)*va[0])/fabs(cos(*theta)*va[1] - sin(*theta)*va[0]);
-        *et_val = t2;
+    // versor e0 which is perpendicular to er and ew: value of 1 only on the place which comes out from screen
+    e0z = er[0]*ew[1] - er[1]*ew[0];
+    //printf("e0z=%f\n", e0z);
+
+    scal_norm = (er[0]*we[0] + er[1]*we[1])/wep_mod;
+    mod_sqrt = (er[0]*we[0] + er[1]*we[1])*(er[0]*we[0] + er[1]*we[1])/(wep_mod*wep_mod);
+
+    // mu = 0;
+    sqrt_var = cos(0)*cos(0) - mod_sqrt*sin(0)*sin(0);
+
+    if ( sqrt_var < 0){
+        sqrt_var = -sqrt_var;
     }
-    //printf("t2z=%f,\n", t2);
 
-    t1[0] = cos(*theta);
-    t1[1] = sin(*theta);
-    //sp = t1[0]*va[0]/Va_mod + t1[1]*va[1]/Va_mod;
-    //printf("sp=%f\n", sp);
-    //angle = acos(sp);
-    //printf("angle=%f\n", angle);
-    //printf("vect prod=%f\n", sin(angle) );
+    etz = -1;//sqrt( sqrt_var )*e0z; //-1
 
-    //t21 = sin(angle)/fabs(sin(angle));
-    //printf("t21=%f\n", t21);
-
-    t3[0] = va[1]*t2/Va_mod;
-    t3[1] = -va[0]*t2/Va_mod;
-    //printf("t30=%f, t31=%f\n", t3[0], t3[1]);
-
-    L[0] = *lc*t3[0];
-    L[1] = *lc*t3[1];
- 
-    D[0] = *dc*cos(beta + PI);
-    D[1] = *dc*sin(beta + PI);    
-    *d0 = D[0];
-    *d1 = D[1];
-
-    /*if (va[0] > 0) {
-        beta += PI;
+    /*if (it == 0){
+        etz = sqrt( sqrt_var )*e0z; //-1
+    }
+    else {
+        etz_tmp = sqrt( sqrt_var )*e0z; //-1
+        if ( (etz_tmp == 1) || (etz_tmp = -1) ){
+            etz = etz_tmp;
+        }
     }*/
 
-    //L[0] = *lc*cos(beta - PI/2.);
-    //L[1] = *lc*sin(beta - PI/2.);
-    //printf("L0=%f, L1=%f\n", L[0], L[1]);
+    *et_val = etz;
+    //printf("etz=%f\n", etz);
+
+    Caer = 0.5*rho*A*mod_we;
+
+    L[0] = Caer*CL_alpha[alpha]*(we[1]*etz);
+    L[1] = Caer*CL_alpha[alpha]*(-we[0]*etz);
+    //printf("L[0]=%f, L[1]=%f\n", L[0], L[1]);
+    
+    *lc =  Caer*CL_alpha[alpha]*mod_we;
 
     *l0 = L[0];
     *l1 = L[1];
 
+    D[0] = Caer*CD_alpha[alpha]*we[0];
+    D[1] = Caer*CD_alpha[alpha]*we[1];
+    //printf("D[0]=%f, D[1]=%f\n\n", D[0], D[1]);
+
+    *d0 = D[0];
+    *d1 = D[1];
+
+    *dc = Caer*CD_alpha[alpha]*mod_we;
+
     F_aer[0] = L[0] + D[0];
     F_aer[1] = L[1] + D[1];
+    //printf("\n");
 
     // ===================== CASE 1) BLOCK NOT MOVING ( |v-block| < 10E-6 ) ==================
 
