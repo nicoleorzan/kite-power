@@ -1,15 +1,15 @@
-#include "Dynamics/dynamics_3d_cartesian_houska.h"
+#include "Dynamics/dynamics_3d_cartesian_williams.h"
 //#include "Dynamics/winds.h"
 #include <time.h>
 #include <string.h>
 #include <stdbool.h>
 
-#define _theta0 PI/4. // DA 0 PI/2
+#define _theta0 PI/4.
 #define _phi0 0.
-#define _dtheta0 0. // DA 0 -0.5
+#define _dtheta0 0.
 #define _dphi0 0.
 #define dim 3
-#define mu 0.0872665 //0. //0.0872665=5          RADIANS!!!
+#define mu 0.0872665 //0.//0.261799//=15 //0.0872665=5          RADIANS!!!
 
 // ============== FILE INPUT: ATTACK ANGLE AND WIND X, Y, Z, THETA0 AND PHI0 ============
 
@@ -34,7 +34,6 @@ int main(int argc, char *argv[]){
     double dtheta = _dtheta0;
     double dphi = _dphi0;
 
-    int uno=0, due=0, tre=0;
     double sp=0, pv=0;
 
     if (alpha_index >= n_alphas){
@@ -46,10 +45,10 @@ int main(int argc, char *argv[]){
 
     FILE *trajectory, *debug;
     trajectory = fopen("out.txt", "w+");
-    debug = fopen("hdebug3d.csv", "w+");
+    debug = fopen("debug3d.csv", "w+");
 
     fprintf(trajectory, "t,x_kite,y_kite,z_kite,x_block,y_block,z_block,theta,vtheta,windx,windy,wind_z,v_blockx,v_blocky,Tension\n");
-    fprintf(debug, "i,Alpha,mu,theta,Windx,Windy,Windz,Vkx,Vky,Vkz,Lift,Liftx,Lifty,Liftz,Drag,Tension,F_attrito,sector,uno,due,tre,1-sp,angle,prod_vect,t2[0],t2[1],t2[2]\n");
+    //fprintf(debug, "i,Alpha,mu,theta,Windx,Windy,Windz,Vkx,Vky,Vkz,Lift,Liftx,Lifty,Liftz,Drag,Tension,F_attrito,sector,uno,due,tre,1-sp,angle,prod_vect,t2[0],t2[1],t2[2]\n");
 
     // ============================ VARIABLES DEFINITION ============================
 
@@ -67,8 +66,6 @@ int main(int argc, char *argv[]){
     double *r_diff = (double*) malloc(dim * sizeof(double)); 
     double *v_diff = (double*) malloc(dim * sizeof(double));
     double *a_diff = (double*) malloc(dim * sizeof(double)); 
-
-    double *t22= (double*) malloc(3 * sizeof(double)); 
 
     double r_diff_modulo;
     double v_diff_modulo;
@@ -110,11 +107,11 @@ int main(int argc, char *argv[]){
         rk[1] = r_block[1] + (rk[1] - r_block[1])/fabs(r_diff_modulo)*R;
         rk[2] = r_block[2] + (rk[2] - r_block[2])/fabs(r_diff_modulo)*R;
 
-        if (i%PRINTSTEP == 0){
+        /*if (i%50 == 0){
             fprintf(debug, "%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d,%d,%d,%f,%f,%f,%f,%f,%f\n", \
                     i, alphas[alpha_index], mu, theta, W[0], W[1], W[2], vk[0], vk[1], vk[2], lift, l0, l1, l2, drag, T, \
                     fabs(F_attr), sector, uno, due, tre, 1-fabs(sp), acos(sp), pv, t22[0], t22[1], t22[2]);
-        }
+        }*/
 
         if (i%PRINTSTEP == 0 || rk[2] <= 0.){
             fprintf(trajectory, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", \
