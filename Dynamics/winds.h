@@ -6,8 +6,9 @@
 #define PI 3.1415926535897932384626433
 
 #define epsilon_wind 0.1
-#define Lx 50
-#define Ly 50
+#define epsilon_wind_hard 0.2
+#define Lx 50.0
+#define Ly 50.0
 #define k_wind 0.5
 
 #define mean_wind 25
@@ -23,15 +24,26 @@
 
 void streamfunction2d(double *rk, double *W){ // kp kiteposition in (x,z)
 
-    W[0] = k_wind*rk[1]*(1+epsilon_wind*sin(PI*rk[0]/Lx)*cos(PI*rk[1]/Ly)*PI/Ly);
-    W[1] = -(k_wind*rk[1]*rk[1]/2*epsilon_wind*sin(PI*rk[1]/Ly)*cos(PI*rk[0]/Lx));
+    W[0] = 0.5*k_wind*rk[1]*(2*epsilon_wind*sin(PI*rk[0]/Lx)*sin(PI*rk[1]/Ly) + \
+        epsilon_wind*PI*rk[1]/Ly*sin(PI*rk[0]/Lx)*cos(PI*rk[1]/Ly) + 2);
+    W[1] = -k_wind*epsilon_wind*PI*rk[1]*rk[1]/(2*Lx)*cos(PI*rk[0]/Lx)*sin(PI*rk[1]/Ly);
+
 }
 
-void streamfunction3d(double *rk, double *W){ // kp kiteposition in (x,z)
+void streamfunction2d_hard(double *rk, double *W){ // kp kiteposition in (x,z)
 
-    W[0] = k_wind*rk[2]*(1+epsilon_wind*sin(PI*rk[0]/Lx)*cos(PI*rk[2]/Ly)*PI/Ly);
-    W[2] = -(k_wind*rk[2]*rk[2]/2*epsilon_wind*sin(PI*rk[2]/Ly)*cos(PI*rk[0]/Lx));
+    W[0] = 0.5*k_wind*rk[1]*(2*epsilon_wind_hard*sin(PI*rk[0]/Lx)*sin(PI*rk[1]/Ly) + \
+        epsilon_wind_hard*PI*rk[1]/Ly*sin(PI*rk[0]/Lx)*cos(PI*rk[1]/Ly) + 2);
+    W[1] = -k_wind*epsilon_wind_hard*PI*rk[1]*rk[1]/(2*Lx)*cos(PI*rk[0]/Lx)*sin(PI*rk[1]/Ly);
+
+}
+
+void streamfunction3d_hard(double *rk, double *W){ // kp kiteposition in (x,y,z)
+
+    W[0] = 0.5*k_wind*rk[2]*(2*epsilon_wind_hard*sin(PI*rk[0]/Lx)*sin(PI*rk[2]/Ly) + \
+      epsilon_wind_hard*PI*rk[2]/Ly*sin(PI*rk[0]/Lx)*cos(PI*rk[2]/Ly) + 2);
     W[1] = 0;
+    W[2] = -k_wind*epsilon_wind_hard*PI*rk[2]*rk[2]/(2*Lx)*cos(PI*rk[0]/Lx)*sin(PI*rk[2]/Ly);
 }
 
 double ornstein_uhlenbeck(double * fluct){

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
-#include "constants.h"
+#include "constants1.h"
 
 #ifndef __dynamics__
 #define __dynamics__
@@ -112,8 +112,10 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     we[0] = W[0] - vk[0];              // Effective wind on x
     we[1] = W[1] - vk[1];              // Effective wind on y
     we[2] = W[2] - vk[2];              // Effective wind on z
+    //printf("we[0]=%f, we[1]=%f, we[2]=%f\n", we[0], we[1], we[2]);
 
     mod_we = sqrt(we[0]*we[0] + we[1]*we[1] + we[2]*we[2]);
+    //printf("we[0]=%f, we[1]=%f, we[2]=%f\n", we[0]/mod_we, we[1]/mod_we, we[2]/mod_we);
 
     // Computing Lift and Drag   
 
@@ -122,6 +124,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     er[0] = sin(*theta)*cos(*phi);
     er[1] = sin(*theta)*sin(*phi);
     er[2] = cos(*theta);
+    //printf("er[0]=%f, er[1]=%f, er[2]=%f\n", er[0], er[1], er[2]);
 
     // calcolo la componente del vento effettivo sul piano theta/phi sottraendo ad ogni componente il prod
     // scalare tra We ed er:
@@ -130,7 +133,6 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     wep[0] = we[0] - (er[0]*we[0] + er[1]*we[1] + er[2]*we[2])*er[0];
     wep[1] = we[1] - (er[0]*we[0] + er[1]*we[1] + er[2]*we[2])*er[1];
     wep[2] = we[2] - (er[0]*we[0] + er[1]*we[1] + er[2]*we[2])*er[2];
-    //printf("we[0]=%f, we[1]=%f, we[2]=%f\n", we[0], we[1], we[2]);
     //printf("wep[0]=%f, wep[1]=%f, wep[2]=%f\n", wep[0], wep[1], wep[2]);
 
     // normalizzo wep ==> ew
@@ -147,7 +149,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     e0[0] = er[1]*ew[2] - er[2]*ew[1];
     e0[1] = er[2]*ew[0] - er[0]*ew[2];
     e0[2] = er[0]*ew[1] - er[1]*ew[0];
-    printf("e0[0]=%f, e0[1]=%f, e0[2]=%f\n", e0[0], e0[1], e0[2]);
+    //printf("e0[0]=%f, e0[1]=%f, e0[2]=%f\n", e0[0], e0[1], e0[2]);
 
     // per calcolare et, lo scompongo sulla terna er, ew, e0
     // et = ar*er + aw*ew + a0*e0 ==> vedi eq 8 del paper che ti ho mandato
@@ -155,27 +157,13 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     scal_norm = (er[0]*we[0] + er[1]*we[1] + er[2]*we[2])/wep_mod;
     mod_sqrt = (er[0]*we[0] + er[1]*we[1] + er[2]*we[2])*(er[0]*we[0] + er[1]*we[1] + er[2]*we[2])/(wep_mod*wep_mod);
     //printf("(er[0]*we[0] + er[1]*we[1] + er[2]*we[2])=%f\n",  (er[0]*we[0] + er[1]*we[1] + er[2]*we[2]));
-    //printf("wep_mod=%f\n", wep_mod);
-
-    //printf("scal_norm=%f\nmod_sqrt=%f\n", scal_norm, mod_sqrt);
-
-    //printf("sin(Psi)*er[0] - scal_norm*sin(Psi)*ew[0]=%f\n", sin(Psi)*er[0] - scal_norm*sin(Psi)*ew[0]);
-
-    //printf("cos(Psi)*cos(Psi) - mod_sqrt*sin(Psi)*sin(Psi) =%f\n", cos(Psi)*cos(Psi) - mod_sqrt*sin(Psi)*sin(Psi) );
-
-    //printf("cosphi=%f, sinphi=%f\n", cos(Psi), sin(Psi));
-    //printf("cos^2phi=%f, sin^2phi=%f\n", cos(Psi)*cos(Psi), sin(Psi)*sin(Psi));
-
-    //printf("mod_sqrt*sin(Psi)*sin(Psi)=%f\n", mod_sqrt*sin(Psi)*sin(Psi) );
 
     sqrt_var = cos(Psi)*cos(Psi) - mod_sqrt*sin(Psi)*sin(Psi);
 
-    if ( sqrt_var < 0){
+    /*if ( sqrt_var < 0){
         sqrt_var = -sqrt_var;
-    }
-    printf("ao=%f\n", sqrt(sqrt_var));
-
-    //printf("sin(Psi)=%f, scal_norm*sin(Psi)=%f\n",sin(Psi), scal_norm*sin(Psi));
+    }*/
+    //printf("sqrt(sqrt_var)=%f\n", sqrt(sqrt_var));
 
     et[0] = sin(Psi)*er[0] - scal_norm*sin(Psi)*ew[0] + 
         sqrt( sqrt_var )*e0[0];
@@ -187,8 +175,6 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     et[2] = sin(Psi)*er[2] - scal_norm*sin(Psi)*ew[2] + 
         sqrt( sqrt_var )*e0[2];
-        //sqrt( cos(Psi)*cos(Psi) - mod_sqrt*sin(Psi)*sin(Psi) )*e0[2];
-
     printf("et[0]=%f, et[1]=%f, et[2]=%f\n", et[0], et[1], et[2]);
 
     Caer = 0.5*rho*A*mod_we;
@@ -199,7 +185,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     L[0] = Caer*CL_alpha[alpha]*(we[1]*et[2]-we[2]*et[1]);
     L[1] = Caer*CL_alpha[alpha]*(we[2]*et[0]-we[0]*et[2]);
     L[2] = Caer*CL_alpha[alpha]*(we[0]*et[1]-we[1]*et[0]);
-    printf("L[0]=%f, L[1]=%f, L[2]=%f\n", L[0], L[1], L[2]);
+    //printf("L[0]=%f, L[1]=%f, L[2]=%f\n", L[0], L[1], L[2]);
     
     *lc =  Caer*CL_alpha[alpha]*mod_we;
 
@@ -210,7 +196,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     D[0] = Caer*CD_alpha[alpha]*we[0];
     D[1] = Caer*CD_alpha[alpha]*we[1];
     D[2] = Caer*CD_alpha[alpha]*we[2];
-    printf("D[0]=%f, D[1]=%f, D[2]=%f\n\n", D[0], D[1], D[2]);
+    //printf("D[0]=%f, D[1]=%f, D[2]=%f\n\n", D[0], D[1], D[2]);
 
     *d0 = D[0];
     *d1 = D[1];

@@ -1,12 +1,12 @@
-#include "Dynamics/dynamics_3d_cartesian.h"
+#include "Dynamics/dynamics_3d_cartesian_rail.h"
 //#include "Dynamics/winds.h"
 #include <time.h>
 #include <string.h>
 #include <stdbool.h>
 
-#define _theta0 PI/4.
+#define _theta0 PI/2.
 #define _phi0 0.
-#define _dtheta0 0.
+#define _dtheta0 -0.5
 #define _dphi0 0.
 #define dim 3
 #define mu 0.//0.261799//=15 //0.0872665=5          RADIANS!!!
@@ -48,7 +48,7 @@ int main(int argc, char *argv[]){
     debug = fopen("debug3d.csv", "w+");
 
     //fprintf(trajectory, "t,x_kite,y_kite,z_kite,x_block,y_block,z_block,theta,vtheta,windx,windy,wind_z,v_blockx,v_blocky,Tension\n");
-    //fprintf(debug, "i,Alpha,mu,theta,Windx,Windy,Windz,Vkx,Vky,Vkz,Lift,Liftx,Lifty,Liftz,Drag,Tension,F_attrito,sector,uno,due,tre,1-sp,angle,prod_vect,t2[0],t2[1],t2[2]\n");
+    fprintf(debug, "i,Alpha,mu,theta,Windx,Windy,Windz,Vkx,Vky,Vkz,Lift,Liftx,Lifty,Liftz,Drag,Tension,F_attrito,sector,uno,due,tre,1-sp,angle,prod_vect,t2[0],t2[1],t2[2]\n");
 
     // ============================ VARIABLES DEFINITION ============================
 
@@ -111,16 +111,16 @@ int main(int argc, char *argv[]){
 
         //streamfunction3d(rk, W);
 
-        /*if (i%50 == 0){
-            fprintf(debug, "%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d,%d,%d,%f,%f,%f,%f,%f,%f\n", \
+        if (i%1 == 0){
+            fprintf(debug, "%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d\n", \
                     i, alphas[alpha_index], mu, theta, W[0], W[1], W[2], vk[0], vk[1], vk[2], lift, l0, l1, l2, drag, T, \
-                    fabs(F_attr), sector, uno, due, tre, 1-fabs(sp), acos(sp), pv, t22[0], t22[1], t22[2]);
-        }*/
+                    fabs(F_attr), sector);
+        }
 
         if (i%PRINTSTEP == 0 || rk[2] <= 0.){
             //fprintf(trajectory, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", \
-            //        t, rk[0], rk[1], rk[2], r_block[0], r_block[1],r_block[2], theta, dtheta, \
-            //        W[0], W[1], W[2], v_block[0], v_block[1],T);
+                    t, rk[0], rk[1], rk[2], r_block[0], r_block[1],r_block[2], theta, dtheta, \
+                    W[0], W[1], W[2], v_block[0], v_block[1],T);
             if (rk[2] <=0. ){
                 //printf("Kite Fall, steps %d, z<0, break\n", i);
                 break;

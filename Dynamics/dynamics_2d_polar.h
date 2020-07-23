@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
-#include "constants.h"
+#include "constants1.h"
 
 #ifndef __dynamics__
 #define __dynamics__
@@ -61,7 +61,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
                             double * theta, // Angle, velocity and acceleration values
                             int alpha,
                             double * W, double * lc, double * dc,
-                            double * T, double *F_attr, int it, int * sector){
+                            double * T, double *F_attr, int it, int * sector, int* et_val){
 
     va[0] = vk[0] - W[0];              // Apparent velocity on x
     va[1] = vk[1] - W[1];              // Apparent velocity on z
@@ -79,7 +79,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     //t2 = (cos(*theta)*va[1] - sin(*theta)*va[0])/fabs(cos(*theta)*va[1] - sin(*theta)*va[0]);
     if (it == 0){
         t2 = (cos(*theta)*va[1] - sin(*theta)*va[0])/fabs(cos(*theta)*va[1] - sin(*theta)*va[0]);
-        //*et_val = t2;
+        *et_val = t2;
     }
 
     t3[0] = va[1]*t2/Va_mod;
@@ -90,14 +90,6 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     D[0] = *dc*cos(beta + PI);
     D[1] = *dc*sin(beta + PI);
-
-    /*if (va[0] > 0) {
-        beta += PI;
-    }
-
-    L[0] = *lc*cos(beta - PI/2.);
-    L[1] = *lc*sin(beta - PI/2.);
-    */
 
     // ===================== CASE 1) BLOCK NOT MOVING ( |v-block| < 10E-6 ) ==================
 

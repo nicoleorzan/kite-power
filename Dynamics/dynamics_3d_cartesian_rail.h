@@ -7,6 +7,8 @@
 #ifndef __dynamics__
 #define __dynamics__
 
+#define CONST 10000
+
 //#define DEBUG
 
 double Va_mod;
@@ -78,7 +80,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
                             int alpha, double mu,
                             double * W, double * lc, double * dc,
                             double * T, double *F_attr, int it, int * sector, 
-                            double *l0, double *l1, double *l2, double *d0, double *d1, double *d2){
+                            double * l0, double * l1, double * l2, double * d0, double * d1, double * d2){
 
     //printf("\ni=%d, noi\n", it);                               
     
@@ -307,11 +309,13 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     a_block[2] = 0;
 
+    // BLOCKED MOTION ON Y BECAUSE OF THE RAIL 
+    
     v_block[0] = v_block[0] + h*a_block[0]; 
-    v_block[1] = v_block[1] + h*a_block[1];
+    v_block[1] = 0;//v_block[1] + h*a_block[1];
 
     r_block[0] = r_block[0] + h*v_block[0]; 
-    r_block[1] = r_block[1] + h*v_block[1];
+    r_block[1] = 0;//r_block[1] + h*v_block[1];
 
     ak[0] = (D[0] + L[0] - Tension[0])/m;
     ak[1] = (D[1] + L[1] - Tension[1])/m;

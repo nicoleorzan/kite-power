@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
-#include "constants.h"
+#include "constants1.h"
 
 #ifndef __dynamics__
 #define __dynamics__
@@ -99,29 +99,14 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
 
     *dc = 0.5*rho*CD_alpha[alpha]*A*Va_mod*Va_mod;
 
-    //printf("\nva[0]=%f, va[1]=%f\n", va[0]/Va_mod, va[1]/Va_mod);
-    //printf("t1[0]=%f, t1[1]=%f\n", cos(*theta), sin(*theta));
-
+    //t2 = (cos(*theta)*va[1] - sin(*theta)*va[0])/fabs(cos(*theta)*va[1] - sin(*theta)*va[0]);
     if (it == 0){
         t2 = (cos(*theta)*va[1] - sin(*theta)*va[0])/fabs(cos(*theta)*va[1] - sin(*theta)*va[0]);
         *et_val = t2;
     }
-    //printf("t2z=%f,\n", t2);
-
-    t1[0] = cos(*theta);
-    t1[1] = sin(*theta);
-    //sp = t1[0]*va[0]/Va_mod + t1[1]*va[1]/Va_mod;
-    //printf("sp=%f\n", sp);
-    //angle = acos(sp);
-    //printf("angle=%f\n", angle);
-    //printf("vect prod=%f\n", sin(angle) );
-
-    //t21 = sin(angle)/fabs(sin(angle));
-    //printf("t21=%f\n", t21);
 
     t3[0] = va[1]*t2/Va_mod;
     t3[1] = -va[0]*t2/Va_mod;
-    //printf("t30=%f, t31=%f\n", t3[0], t3[1]);
 
     L[0] = *lc*t3[0];
     L[1] = *lc*t3[1];

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
-#include "constants.h"
+#include "constants1.h"
 
 #ifndef __dynamics__
 #define __dynamics__
@@ -76,7 +76,6 @@ void variables_initialization(double *rk, double *vk, double *ak,
     vk[0] = v_block[0] - R*sin(theta)*sin(phi)*dphi + R*cos(theta)*cos(phi)*dtheta;
     vk[1] = v_block[1] + R*cos(phi)*dphi;
     vk[2] = -R*cos(phi)*cos(theta)*dphi - cos(phi)*cos(theta)*dtheta;
-    //printf("vk[0]=%f, vk[1]=%f, vk[2]=%f\n", vk[0], vk[1], vk[2]);
 
     ak[0] = 0; // da rifareR*(a_block[0]/R -sin(theta)*cos(phi)*(dtheta*dtheta + dphi*dphi)
             //-2*cos(theta)*sin(phi)*dtheta*dphi);
@@ -147,7 +146,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     t2[0] = t2[0]/t2_mod;
     t2[1] = t2[1]/t2_mod;
     t2[2] = t2[2]/t2_mod;
-    //printf("t20=%f, t21=%f, t22=%f\n", t2[0], t2[1], t2[2]);
+    printf("t20=%f, t21=%f, t22=%f\n", t2[0], t2[1], t2[2]);
 
     // Computing t3 = vrel x t2
 
@@ -165,13 +164,13 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     // Computing Lift and Drag            
 
     *lc = 0.5*rho*CL_alpha[alpha]*A*Va_mod*Va_mod;
-    printf("\ni=%d\n", it);
-    printf("va[0]=%f, va[1]=%f, va[2]=%f\n", va[0], va[1], va[2]);
+    //printf("\ni=%d\n", it);
+    //printf("va[0]=%f, va[1]=%f, va[2]=%f\n", va[0], va[1], va[2]);
 
     L[0] = *lc*(t2[0]*sin(mu) + t3[0]*cos(mu));
     L[1] = *lc*(t2[1]*sin(mu) + t3[1]*cos(mu));
     L[2] = *lc*(t2[2]*sin(mu) + t3[2]*cos(mu));
-    printf("L[0]=%f, L[1]=%f, L[2]=%f\n", L[0], L[1], L[2]);
+    //printf("L[0]=%f, L[1]=%f, L[2]=%f\n", L[0], L[1], L[2]);
 
     *l0 = L[0];
     *l1 = L[1];
@@ -184,7 +183,7 @@ void integration_trajectory(double * rk, double * vk, double * ak, // Kite varia
     D[0] = -*dc*va[0];
     D[1] = -*dc*va[1];
     D[2] = -*dc*va[2];
-    printf("D[0]=%f, D[1]=%f, D[2]=%f\n", D[0], D[1], D[2]);
+    //printf("D[0]=%f, D[1]=%f, D[2]=%f\n", D[0], D[1], D[2]);
 
     *d0 = D[0];
     *d1 = D[1];

@@ -1,5 +1,5 @@
 #include "Dynamics/dynamics_2d_cartesian.h"
-#include "Dynamics/winds.h"
+//#include "Dynamics/winds.h"
 #include <time.h>
 #include <string.h>
 #include <stdbool.h>
@@ -30,30 +30,14 @@ int main(int argc, char *argv[]){
 
     // ========================= CREATING TRAJECTORY OUTPUT FILE ==========================
 
-    /*char text[30];
-    time_t now = time(NULL);
-    struct tm tim;
-    tim = *(localtime(&now));
-    strftime(text, sizeof(text)-1, "%b-%d-%Y_%H-%M-%S", &tim);
-    text[30] = 0;
-
-    // concat the date to file name
-    char *filename_trajectory;
-    if((filename_trajectory = malloc(strlen("filename.txt")+strlen(text)+1)) != NULL){
-        filename_trajectory[0] = '\0';   // ensures the memory is an empty string
-        strcat(filename_trajectory,"trajectory-");
-        strcat(filename_trajectory,text);
-        strcat(filename_trajectory,".txt");
-    }*/
-
-    FILE *trajectory, *debug, *debug_et;
-    trajectory = fopen("outc.txt", "w+"); // fopen(filename_trajectory, "w+");
+    FILE *trajectory, *debug;//, *debug_et;
+    trajectory = fopen("outc.txt", "w+");
     debug = fopen("debug2d.csv", "w+");
-    debug_et = fopen("Et-analysis/debug_et.csv", "w+");
+    // debug_et = fopen("Et-analysis/debug_et.csv", "w+");
 
     fprintf(trajectory, "t,x_kite,z_kite,x_block,z_block,theta,vtheta,windx,windy,v_block,Tension\n");
-    fprintf(debug, "i,Alpha,theta,Windx,Windz,Vkx,Vkz,Lift,Liftx,Liftz,Drag,Tension,F_attrito,sector\n");
-    fprintf(debug_et, "i,Alpha,Windx,Windz,vkx,vkz,t2_value\n");
+    fprintf(debug, "i,Alpha,theta,Windx,Windz,Vkx,Vkz,vk[0]-W[0],vk[1]-W[1],Lift,Liftx,Liftz,Drag,Tension,F_attrito,sector\n");
+    //fprintf(debug_et, "i,Alpha,Windx,Windz,vkx,vkz,t2_value\n");
 
     // ============================ VARIABLES DEFINITION ============================
 
@@ -112,18 +96,19 @@ int main(int argc, char *argv[]){
         rk[0] = r_block[0] + (rk[0] - r_block[0])/fabs(r_diff_modulo)*R;
         rk[1] = r_block[1] + (rk[1] - r_block[1])/fabs(r_diff_modulo)*R;
 
-        fprintf(debug_et, "%d,%.2f,%.2f,%.2f,%.2f,%.2f,%d\n", i, alphas[alpha_index], W[0], W[1], vk[0], vk[1], et_val);
+        //fprintf(debug_et, "%d,%.2f,%.2f,%.2f,%.2f,%.2f,%d\n", i, alphas[alpha_index], W[0], W[1], vk[0], vk[1], et_val);
 
         //streamfunction2d(rk, W);
 
-        /*if (i%1 == 0){
-            fprintf(debug, "%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%d\n",
-                    i, alphas[alpha_index], theta, W[0], W[1], vk[0], vk[1], lift, l0, l1, drag, T, fabs(F_attr), sector);
-        }*/
+        if (i%1 == 0){
+            fprintf(debug, "%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%d\n",
+                    i, alphas[alpha_index], theta, W[0], W[1], vk[0], vk[1], vk[0]-W[0], vk[1]-W[1], lift, l0, \
+                    l1, drag, T, fabs(F_attr), sector);
+        }
 
         if (i%PRINTSTEP == 0 || rk[1] <= 0.){
-            fprintf(trajectory, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", \
-                     t, rk[0], rk[1], r_block[0], r_block[1], theta, vtheta, W[0], W[1], v_block[0], T);
+            //fprintf(trajectory, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", \
+            //         t, rk[0], rk[1], r_block[0], r_block[1], theta, vtheta, W[0], W[1], v_block[0], T);
             if (rk[1] <=0. ){
                 //printf("Kite Fall, steps %d, z<0, break\n", i);
                 break;
@@ -153,11 +138,11 @@ int main(int argc, char *argv[]){
     }
 
     //printf("\niter, tot time, m_block, alpha, theta0, theta_fin, v_theta_fin, v_block_fin_x, Wind_x, Wind_y, ");
-    //printf(" vkitex, vkitez, vrelkite_x, vrelkite_y, F_vinc, Tension, Lift, l0, l1, Drag, d0, d1, Stability\n");
+    //printf(" vkitex, vkitez, vrelkite_x, vrelkite_y, F_vinc, Tension, Lift, Drag, Stability\n\n");
     
-    printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f,  %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %d\n", \
+    printf("%d, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %d\n", \
     t, t*h, m_block, alphas[alpha_index], theta0, theta, dtheta, v_block[0], W[0], W[1], \
-    vk[0], vk[1], vk[0] - W[0], vk[1] - W[1], F_vinc, T, lift, l0, l1, drag, d0, d1, stability);
+    vk[0], vk[1], vk[0] - W[0], vk[1] - W[1], F_vinc, T, lift,  drag, stability);
 
     free(rk);
     free(vk);
@@ -173,7 +158,7 @@ int main(int argc, char *argv[]){
 
     fclose(trajectory);
     fclose(debug);
-    fclose(debug_et);
+    //fclose(debug_et);
 
     return 0;
 
