@@ -1,3 +1,4 @@
+
 # Wind Energy Harvesting with Reinforcement Learning
 
 This repository contains the implementation regarding the work on wind energy production by means of airborne technologies and reinforcement learning.
@@ -8,12 +9,9 @@ This repository contains the implementation regarding the work on wind energy pr
 
 ## Examples:
 
-Trajectory of a kite pulling a block in a constant wind of 10 m/s along the x axis, with attack angle of 19 degrees and chord length fixed to 50 m. The kite was given an angular acceleration of 0.5 radians to start its fligth.
+https://user-images.githubusercontent.com/32459554/112457106-b8fc1280-8d5b-11eb-8ac5-8576971d033b.mp4
 
-<figure>
-  <img src="Images/2d_trajectory.gif" width=500px>
-</figure>
-
+[Link to youtube video](https://www.youtube.com/watch?v=Bk5FHeSUWg4)
 
 ### Contributors:
 
