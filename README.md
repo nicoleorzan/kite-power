@@ -9,9 +9,9 @@ This repository contains the implementation regarding the work on wind energy pr
 
 ## Examples:
 
-https://user-images.githubusercontent.com/32459554/112457106-b8fc1280-8d5b-11eb-8ac5-8576971d033b.mp4
+![kite3d_gif](https://user-images.githubusercontent.com/32459554/112457824-68d18000-8d5c-11eb-9ba3-cddc85fb04c9.gif)
 
-[Link to youtube video](https://www.youtube.com/watch?v=Bk5FHeSUWg4)
+[Link to complete youtube video](https://www.youtube.com/watch?v=Bk5FHeSUWg4)
 
 ### Contributors:
 
