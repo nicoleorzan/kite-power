@@ -13,6 +13,8 @@ This repository contains the implementation regarding the work on wind energy pr
 
 [Link to complete youtube video](https://www.youtube.com/watch?v=Bk5FHeSUWg4)
 
+Read my thesis [here](https://github.com/nicoleorzan/kite-power/blob/master/Wind_Energy_Harvesting_with_Reinforcement_Learning.pdf)
+
 ### Contributors:
 
 - [Nicole Orzan](http://github.com/nicoleorzan)
