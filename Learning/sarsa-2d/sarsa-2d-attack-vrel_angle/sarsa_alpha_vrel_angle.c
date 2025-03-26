@@ -1,5 +1,5 @@
-#include "../../Dynamics/dynamics_2d_cartesian.h"
-#include "../../Dynamics/winds.h"
+#include "../../../Dynamics/dynamics_2d_cartesian.h"
+#include "../../../Dynamics/winds.h"
 #include "sarsa_alpha_vrel_angle.h"
 
 double reward_dt = h*decision_time;
